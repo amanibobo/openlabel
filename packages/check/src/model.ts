@@ -73,7 +73,7 @@ export function claudeModel(options: { client?: Anthropic; model?: string } = {}
       return result.claims;
     },
     async judge({ labelTitle, claim, kind, candidates }) {
-      const excerpts = candidates.map((s) => `[${s.id}] ${s.text}`).join("\n");
+      const excerpts = candidates.map((s) => `[${s.id}] ${s.context ? `(${s.context}) ` : ""}${s.text}`).join("\n");
       const content = `Drug: ${labelTitle}\nClaim (${kind}): ${claim}\n\n<excerpts>\n${excerpts}\n</excerpts>`;
       return ask(JUDGE_SYSTEM, content, JudgmentSchema, "high");
     },
