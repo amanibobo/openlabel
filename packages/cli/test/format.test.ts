@@ -33,7 +33,7 @@ describe("formatReport", () => {
 
   it("lists rule findings and a summary with the exit code", () => {
     expect(text).toContain("✗ isi.present  No Important Safety Information on the piece.");
-    expect(text.trim().split("\n").at(-1)).toBe("1 supported · 1 overstated · 1 rule finding · exit 2");
+    expect(text.split("\n").at(-1)?.trim()).toBe("1 supported · 1 overstated · 1 rule finding · exit 2");
   });
 
   it("adds color only when asked", () => {
