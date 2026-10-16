@@ -32,4 +32,4 @@ bun run record   # regenerate public/demo/check.{mp4,webm} and the poster
 - `app/content.ts` holds the copy and example data.
 - `app/geo.ts` projects county maps from `us-atlas` at build time.
 - `app/components/` holds the interactive pieces (claim checker, blast radius, map explorer).
-- `assets-src/lorvexa-ad.html` is the source of `public/images/lorvexa-ad.png`.
+- `assets-src/lorvexa-ad.html` is the source of `public/images/lorvexa-ad.png`. The photo is by [Erik Allen on Pexels](https://www.pexels.com/photo/2589840/).

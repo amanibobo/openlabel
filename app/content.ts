@@ -58,7 +58,7 @@ export const claims: readonly Claim[] = [
     note: "The headline implies complete clearance. The label reports 38% clear or almost clear at week 16.",
     cite: "§14.1",
     sentence: "s-iga",
-    box: { left: 5.5, top: 8, width: 42, height: 14 },
+    box: { left: 4.2, top: 5.2, width: 36.6, height: 12.4 },
   },
   {
     id: "body",
@@ -67,7 +67,7 @@ export const claims: readonly Claim[] = [
     note: "Matches the primary endpoint wording and timepoint.",
     cite: "§14.1 ¶3",
     sentence: "s-iga",
-    box: { left: 5.5, top: 29.5, width: 28, height: 5 },
+    box: { left: 4.2, top: 24.9, width: 26.4, height: 3.6 },
   },
   {
     id: "subhead",
@@ -76,7 +76,7 @@ export const claims: readonly Claim[] = [
     note: "A quality-of-life claim. The label only reports a change in DLQI score.",
     cite: "§14.3",
     sentence: "s-dlqi",
-    box: { left: 5.5, top: 24, width: 32, height: 5.5 },
+    box: { left: 4.2, top: 20, width: 29.4, height: 4.6 },
   },
   {
     id: "imagery",
@@ -85,7 +85,7 @@ export const claims: readonly Claim[] = [
     note: "Implies a benefit beyond the skin endpoints studied in §14. FDA cited this pattern repeatedly in its September 2025 letters.",
     cite: "§14",
     sentence: "s-scope",
-    box: { left: 44.5, top: 53, width: 11, height: 23 },
+    box: { left: 20, top: 29.5, width: 55.5, height: 59.5 },
   },
   {
     id: "isi",
@@ -94,7 +94,7 @@ export const claims: readonly Claim[] = [
     note: "No safety information appears on the piece. Rule print.isi-present.",
     cite: "§5",
     sentence: "s-eye",
-    box: { left: 5.5, top: 86, width: 60, height: 8 },
+    box: { left: 4.2, top: 88.5, width: 22, height: 6.5 },
   },
 ];
 

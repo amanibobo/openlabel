@@ -9,9 +9,10 @@ import { stateMap } from "./geo";
 
 function Mark() {
   return (
-    <svg className="mark" viewBox="0 0 32 32" aria-hidden="true">
-      <path d="M23.5 6.9A11 11 0 1 0 27 16" fill="none" stroke="#f5f5f7" strokeWidth="4" strokeLinecap="round" />
-      <circle cx="16" cy="16" r="3.4" fill="#f5f5f7" />
+    <svg className="mark" viewBox="0 0 26 26" aria-hidden="true">
+      <rect x="1" y="1" width="24" height="24" rx="7" fill="#f5f5f7" />
+      <rect x="6" y="9" width="14" height="2.2" rx="1.1" fill="#000" />
+      <rect x="6" y="14" width="9" height="2.2" rx="1.1" fill="#000" opacity="0.45" />
     </svg>
   );
 }
@@ -171,7 +172,7 @@ export default function Home() {
       <footer className="rail">
         <p className="fine">
           Open Label is free and MIT licensed, made by <a href="https://github.com/amanibobo">Amani Bobo</a> · Not
-          affiliated with FDA. Lorvexa is a fictional drug, and the records and figures on this page are illustrative.
+          affiliated with FDA.
         </p>
       </footer>
     </div>
