@@ -8,10 +8,11 @@ import { formatReport } from "./format.ts";
 export const USAGE = `Usage: openlabel check <file> --label <drug name or DailyMed set id> [options]
 
 Options:
-  --rules <file>   a YAML rule pack (defaults to fda-core)
-  --json           print the report as JSON
-  --model <id>     Claude model to use (default claude-opus-5-5)
-  -h, --help       show this help
+  --rules <file>         a YAML rule pack (defaults to fda-core)
+  --label-version <n>    check against a past label version instead of the current one
+  --json                 print the report as JSON
+  --model <id>           Claude model to use (default claude-opus-5-5)
+  -h, --help             show this help
 
 Exit codes: 0 all supported, 1 overstated or warning, 2 off-label, unsupported or violation,
 64 usage error, 69 the check could not run (network or API).`;
@@ -53,6 +54,7 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
       allowPositionals: true,
       options: {
         label: { type: "string" },
+        "label-version": { type: "string" },
         rules: { type: "string" },
         json: { type: "boolean", default: false },
         model: { type: "string" },
@@ -75,6 +77,12 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
     return 64;
   }
 
+  const labelVersion = values["label-version"] === undefined ? undefined : Number(values["label-version"]);
+  if (labelVersion !== undefined && !Number.isInteger(labelVersion)) {
+    io.stderr(`openlabel: --label-version must be a whole number\n\n${USAGE}`);
+    return 64;
+  }
+
   let piece: string;
   let pack = FDA_CORE;
   try {
@@ -86,7 +94,7 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
   }
 
   try {
-    const label = await (deps.dailyMed ?? dailyMed()).resolve(values.label);
+    const label = await (deps.dailyMed ?? dailyMed()).resolve(values.label, labelVersion);
     const model = (deps.model ?? ((id) => claudeModel(id ? { model: id } : {})))(values.model);
     const report = await check({ piece, label, model, pack });
     io.stdout(values.json ? JSON.stringify(report, null, 2) : formatReport(report, { color: io.color }));

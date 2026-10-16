@@ -7,7 +7,13 @@ import { describe, expect, it } from "vitest";
 import { pieceText, run } from "../src/run.ts";
 
 const label = parseSpl(readFileSync(new URL("../../label/test/fixtures/dupixent-v60.xml", import.meta.url), "utf8"));
-const fakeDailyMed = { resolve: async () => label } as unknown as DailyMed;
+const resolved: (number | undefined)[] = [];
+const fakeDailyMed = {
+  resolve: async (_query: string, version?: number) => {
+    resolved.push(version);
+    return label;
+  },
+} as unknown as DailyMed;
 const offlineDailyMed = {
   resolve: async () => {
     throw new Error("fetch failed");
@@ -61,6 +67,16 @@ describe("run", () => {
       model: () => model,
     });
     expect(JSON.parse(t.out.join("")).claims[0].verdict).toBe("overstated");
+  });
+
+  it("passes a pinned label version through and rejects a bad one", async () => {
+    const t = io();
+    await run(["check", pieceFile("Live clear."), "--label", "dupixent", "--label-version", "53"], t.io, {
+      dailyMed: fakeDailyMed,
+      model: () => model,
+    });
+    expect(resolved.at(-1)).toBe(53);
+    expect(await run(["check", pieceFile("x"), "--label", "dupixent", "--label-version", "latest"], io().io)).toBe(64);
   });
 
   it("exits 69 when the label cannot be fetched", async () => {
