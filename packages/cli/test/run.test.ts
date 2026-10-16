@@ -41,7 +41,7 @@ describe("run", () => {
   it("exits 64 with usage when the label is missing", async () => {
     const t = io();
     expect(await run(["check", "piece.md"], t.io)).toBe(64);
-    expect(t.err.join("")).toMatch(/Usage: openlabel check/);
+    expect(t.err.join("")).toMatch(/openlabel check <file> --label/);
   });
 
   it("exits 64 when the piece file does not exist", async () => {
@@ -96,6 +96,21 @@ describe("run", () => {
     });
     expect(code).toBe(69);
     expect(t.err.join("")).toBe("openlabel: fetch failed");
+  });
+});
+
+describe("run watch", () => {
+  it("exits 0 for a library checked against the current label", async () => {
+    const file = pieceFile("Live clear.");
+    await run(["check", file, "--label", "dupixent", "--save"], io().io, { dailyMed: fakeDailyMed, model: () => model });
+    const current = { label: async () => label } as unknown as DailyMed;
+    const t = io();
+    expect(await run(["watch", join(file, "..")], t.io, { dailyMed: current })).toBe(0);
+    expect(t.out.join("")).toContain("checked against the current label");
+  });
+
+  it("exits 69 when the folder does not exist", async () => {
+    expect(await run(["watch", "/no/such/folder"], io().io, { dailyMed: fakeDailyMed })).toBe(69);
   });
 });
 

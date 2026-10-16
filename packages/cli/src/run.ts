@@ -3,9 +3,16 @@ import { extname } from "node:path";
 import { parseArgs } from "node:util";
 import { check, claudeModel, FDA_CORE, loadPack, sidecarPath, type ClaimModel, type SavedCheck } from "@openlabel/check";
 import { dailyMed, type DailyMed } from "@openlabel/label";
+import { loadLibrary, watchLibrary } from "@openlabel/watch";
 import { formatReport } from "./format.ts";
+import { formatWatch } from "./format-watch.ts";
 
-export const USAGE = `Usage: openlabel check <file> --label <drug name or DailyMed set id> [options]
+export const USAGE = `Usage:
+  openlabel check <file> --label <drug name or DailyMed set id> [options]
+  openlabel watch [folder]
+
+watch reads the reports that check --save left in a folder (default: the current one),
+diffs each piece's label against the current version, and lists what the change touches.
 
 Options:
   --rules <file>         a YAML rule pack (defaults to fda-core)
@@ -74,6 +81,16 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
     return 0;
   }
   const [command, file] = positionals;
+  if (command === "watch") {
+    try {
+      const result = await watchLibrary(await loadLibrary(file ?? "."), deps.dailyMed ?? dailyMed());
+      io.stdout(values.json ? JSON.stringify(result, null, 2) : formatWatch(result, { color: io.color }));
+      return result.pieces.some((p) => p.impacts.length) ? 1 : 0;
+    } catch (error) {
+      io.stderr(`openlabel: ${(error as Error).message}`);
+      return 69;
+    }
+  }
   if (command !== "check" || !file || !values.label) {
     io.stderr(USAGE);
     return 64;
