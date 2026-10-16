@@ -27,7 +27,7 @@ export type Retriever = (query: string, kind: ClaimKind, k?: number) => Sentence
 
 export function retriever(label: Label): Retriever {
   const sentences = [...allSentences(label.sections)];
-  const docs = sentences.map((s) => tokenize(s.text));
+  const docs = sentences.map((s) => tokenize(s.context ? `${s.context} ${s.text}` : s.text));
   const avgLength = docs.reduce((sum, d) => sum + d.length, 0) / Math.max(docs.length, 1);
   const documentFrequency = new Map<string, number>();
   for (const doc of docs) for (const term of new Set(doc)) documentFrequency.set(term, (documentFrequency.get(term) ?? 0) + 1);

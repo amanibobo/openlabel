@@ -20,6 +20,11 @@ describe("retriever on the Dupixent label", () => {
     expect(hits.slice(0, 5).some((s) => s.section.startsWith("14.1") && /IGA 0/.test(s.text))).toBe(true);
   });
 
+  it("finds a results-table row through its caption", () => {
+    const hits = retrieve("38% of adults with atopic dermatitis reached IGA 0 or 1 at Week 16", "efficacy");
+    expect(hits.map((s) => s.id)).toContain("14.1:12.1");
+  });
+
   it("finds the conjunctivitis warning for an eye safety claim", () => {
     const hits = retrieve("conjunctivitis and keratitis", "safety");
     expect(hits[0]?.section).toMatch(/^(5|6)/);
