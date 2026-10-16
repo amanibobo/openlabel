@@ -40,7 +40,8 @@ export async function prescribers(fetchFn: Fetch, search: Pick<Search, "state" |
         else
           byNpi.set(row.Prscrbr_NPI, {
             npi: asNpi(row.Prscrbr_NPI),
-            name: title(`${row.Prscrbr_First_Name} ${row.Prscrbr_Last_Org_Name}`.trim()),
+            first: title(row.Prscrbr_First_Name),
+            last: title(row.Prscrbr_Last_Org_Name),
             city: title(row.Prscrbr_City),
             specialty: row.Prscrbr_Type,
             claims,

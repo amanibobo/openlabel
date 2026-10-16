@@ -20,7 +20,7 @@ describe("prescribers", () => {
     const expected = rows.filter((r) => r.Prscrbr_NPI === "1003808361").reduce((sum, r) => sum + Number(r.Tot_Clms), 0);
     expect(result.find((p) => p.npi === "1003808361")?.claims).toBe(expected);
     expect(result.map((p) => p.claims)).toEqual([...result.map((p) => p.claims)].sort((a, b) => b - a));
-    expect(result.find((p) => p.npi === "1003808361")).toMatchObject({ name: "Charles Douchy", city: "Duluth" });
+    expect(result.find((p) => p.npi === "1003808361")).toMatchObject({ first: "Charles", last: "Douchy", city: "Duluth" });
     expect(decodeURIComponent(urls[0]!)).toContain("filter[Gnrc_Name]=Dupilumab");
   });
 

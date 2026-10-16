@@ -20,7 +20,8 @@ export type Search = {
 
 export type Prescriber = {
   npi: Npi;
-  name: string;
+  first: string;
+  last: string;
   city: string;
   specialty: string;
   claims: number;
