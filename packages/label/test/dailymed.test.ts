@@ -57,6 +57,11 @@ describe("dailyMed", () => {
     expect(calls.filter((url) => url.includes("type=zip"))).toHaveLength(1);
   });
 
+  it("resolves a brand name to a pinned version", async () => {
+    const { client } = fakeDailyMed();
+    expect((await client.resolve("dupixent", 58)).version).toBe(58);
+  });
+
   it("refuses a download whose version is not the one asked for", async () => {
     const { client } = fakeDailyMed();
     await expect(client.label(SET_ID as never, 57)).rejects.toThrow(/asked DailyMed for version 57 of .* and got 58/);

@@ -16,7 +16,7 @@ export type DailyMed = {
   search(drugName: string): Promise<LabelSummary[]>;
   versions(setId: SetId): Promise<{ version: number; published: string }[]>;
   label(setId: SetId, version?: number): Promise<Label>;
-  resolve(query: string): Promise<Label>;
+  resolve(query: string, version?: number): Promise<Label>;
 };
 
 export function defaultCacheDir(): string {
@@ -85,8 +85,8 @@ export function dailyMed(options: { fetch?: Fetch; cacheDir?: string } = {}): Da
     return parsed;
   }
 
-  async function resolve(query: string): Promise<Label> {
-    if (/^[0-9a-f-]{36}$/i.test(query)) return label(asSetId(query));
+  async function resolve(query: string, version?: number): Promise<Label> {
+    if (/^[0-9a-f-]{36}$/i.test(query)) return label(asSetId(query), version);
     const wanted = query.toLowerCase();
     // "KEYTRUDA (" beats "KEYTRUDA QLEX (", and the manufacturer's own label carries far
     // more versions than a repackager's copy of it.
@@ -96,7 +96,7 @@ export function dailyMed(options: { fetch?: Fetch; cacheDir?: string } = {}): Da
     };
     const [match] = (await search(query)).sort((a, b) => score(b) - score(a));
     if (!match) throw new Error(`no DailyMed label matches "${query}"`);
-    return label(match.setId);
+    return label(match.setId, version);
   }
 
   return { search, versions, label, resolve };
