@@ -53,8 +53,13 @@ export function categoryOf(section: string): Category {
   }
 }
 
+// Inserting one table renumbers every table after it; that is not a change in meaning.
 function normalize(text: string): string {
-  return text.toLowerCase().replace(/\s+/g, " ").trim();
+  return text
+    .toLowerCase()
+    .replace(/\b(table|figure)\s+\d+/g, "$1 #")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function words(text: string): Set<string> {
