@@ -1,0 +1,17 @@
+{
+  "name": "openlabel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "openlabel": "./bin/openlabel.js"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@openlabel/check": "*",
+    "@openlabel/label": "*",
+    "tsx": "^4.23.15"
+  }
+}
