@@ -1,30 +1,12 @@
 {
-  "name": "openlabel",
-  "version": "0.1.0",
+  "name": "openlabel-monorepo",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "d3-geo": "^3.1.1",
-    "next": "16.3.8",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "topojson-client": "^3.1.0",
-    "us-atlas": "^3.0.1"
-  },
-  "devDependencies": {
-    "@types/d3-geo": "^3.1.1",
-    "@types/geojson": "^7946.0.16",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@types/topojson-client": "^3.1.5",
-    "eslint": "^9",
-    "eslint-config-next": "16.3.8",
-    "typescript": "^5"
+    "dev": "npm run dev -w @openlabel/web",
+    "build": "npm run build -w @openlabel/web"
   }
 }

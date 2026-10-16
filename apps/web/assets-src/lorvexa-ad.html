@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; width: 1200px; height: 800px; overflow: hidden; background: #000; }
+  .ad {
+    position: relative; width: 1200px; height: 800px; font-family: "Geist", sans-serif;
+    background: url("pexels-2589840-erik-allen.jpg") center / cover no-repeat;
+  }
+  .ad::before {
+    content: ""; position: absolute; inset: 0;
+    background:
+      linear-gradient(180deg, rgba(8, 28, 36, 0.55) 0%, rgba(8, 28, 36, 0.12) 34%, rgba(0, 0, 0, 0) 50%),
+      linear-gradient(0deg, rgba(20, 8, 4, 0.5) 0%, rgba(20, 8, 4, 0) 22%);
+  }
+  h1 { position: absolute; left: 64px; top: 46px; margin: 0; font-size: 96px; font-weight: 600; letter-spacing: -0.045em; color: #fff; line-height: 1; }
+  p { position: absolute; left: 68px; top: 160px; margin: 0; font-size: 26px; color: rgba(255,255,255,0.94); letter-spacing: -0.01em; }
+  .body { position: absolute; left: 68px; top: 199px; font-size: 17px; color: rgba(255,255,255,0.8); }
+  .mark { position: absolute; right: 56px; bottom: 44px; font-size: 40px; font-weight: 600; letter-spacing: -0.03em; color: #fff; }
+  .mark span { display: block; font-size: 15px; font-weight: 400; letter-spacing: 0; opacity: 0.85; text-align: right; }
+</style>
+</head>
+<body>
+<div class="ad">
+  <h1>Live clear.</h1>
+  <p>Get back to the life you love.</p>
+  <div class="body">Clear or almost-clear skin at week 16.</div>
+  <div class="mark">Lorvexa<span>(velorimab)</span></div>
+</div>
+</body>
+</html>
