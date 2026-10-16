@@ -24,12 +24,10 @@ The hero video is a real [OpenTUI](https://opentui.com) app in `tui/`, recorded 
 cd tui
 bun install
 bun run demo     # play it in your terminal
-bun run record   # regenerate public/demo/check.{mp4,webm} and the poster
+bun run record   # regenerate apps/web/public/demo/check.{mp4,webm} and the poster
 ```
 
 ## Layout
 
-- `app/content.ts` holds the copy and example data.
-- `app/geo.ts` projects county maps from `us-atlas` at build time.
-- `app/components/` holds the interactive pieces (claim checker, blast radius, map explorer).
-- `assets-src/lorvexa-ad.html` is the source of `public/images/lorvexa-ad.png`. The photo is by [Erik Allen on Pexels](https://www.pexels.com/photo/2589840/).
+- `apps/web` is the site. `app/content.ts` holds its copy and example data, and `app/geo.ts` projects county maps from `us-atlas` at build time.
+- `apps/web/assets-src/lorvexa-ad.html` is the source of `apps/web/public/images/lorvexa-ad.png`. The photo is by [Erik Allen on Pexels](https://www.pexels.com/photo/2589840/).
