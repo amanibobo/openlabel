@@ -39,12 +39,12 @@ export async function check({ piece, label, model, pack = FDA_CORE, concurrency 
     const span = locate(piece, c.text);
     if (!span || seen.has(`${span.start}:${span.end}`)) continue;
     seen.add(`${span.start}:${span.end}`);
-    claims.push({ id: `c${i + 1}`, text: piece.slice(span.start, span.end), kind: c.kind, ...span });
+    claims.push({ id: `c${i + 1}`, text: piece.slice(span.start, span.end), kind: c.kind, query: c.query, ...span });
   }
 
   const retrieve = retriever(label);
   const judged = await mapLimit(claims, concurrency, async (claim): Promise<CheckedClaim> => {
-    const candidates = retrieve(claim.text, claim.kind);
+    const candidates = retrieve(`${claim.query} ${claim.text}`, claim.kind);
     const raw = await model.judge({ labelTitle: label.title, claim: claim.text, kind: claim.kind, candidates });
     const evidenceText = candidates.filter((s) => raw.evidence.includes(s.id));
     const verdict = raw.verdict === "supported" && evidenceText.length === 0 ? "unsupported" : raw.verdict;

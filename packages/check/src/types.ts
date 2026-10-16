@@ -10,6 +10,7 @@ export type Claim = {
   id: string;
   text: string;
   kind: ClaimKind;
+  query: string;
   // Character offsets into the piece; extraction output that isn't in the piece is rejected.
   start: number;
   end: number;

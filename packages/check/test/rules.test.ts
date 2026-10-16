@@ -4,7 +4,7 @@ import type { CheckedClaim } from "../src/types.ts";
 
 function claim(text: string, piece: string, verdict: CheckedClaim["verdict"]): CheckedClaim {
   const start = piece.indexOf(text);
-  return { id: "c", text, kind: "efficacy", start, end: start + text.length, verdict, evidence: [], reason: "", evidenceText: [] };
+  return { id: "c", text, kind: "efficacy", query: "", start, end: start + text.length, verdict, evidence: [], reason: "", evidenceText: [] };
 }
 
 describe("loadPack", () => {

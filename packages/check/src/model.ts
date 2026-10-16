@@ -4,7 +4,7 @@ import type { Sentence } from "@openlabel/label";
 import { z } from "zod";
 import { CLAIM_KINDS, VERDICTS, type ClaimKind, type Verdict } from "./types.ts";
 
-export type ExtractedClaim = { text: string; kind: ClaimKind };
+export type ExtractedClaim = { text: string; kind: ClaimKind; query: string };
 
 export type JudgeInput = { labelTitle: string; claim: string; kind: ClaimKind; candidates: readonly Sentence[] };
 
@@ -16,7 +16,7 @@ export type ClaimModel = {
 };
 
 const Extraction = z.object({
-  claims: z.array(z.object({ text: z.string(), kind: z.enum(CLAIM_KINDS) })),
+  claims: z.array(z.object({ text: z.string(), kind: z.enum(CLAIM_KINDS), query: z.string() })),
 });
 
 const JudgmentSchema = z.object({
@@ -28,7 +28,8 @@ const JudgmentSchema = z.object({
 const EXTRACT_SYSTEM = `You review pharmaceutical promotional material for a medical, legal and regulatory (MLR) team.
 List every claim a reader could take as a statement about the drug: efficacy, safety, dosing, indication, quality of life, or a comparison.
 Quote each claim exactly as it appears in the piece, as the shortest span that still carries the whole claim.
-Leave out branding, calls to action, and contact details.`;
+Leave out branding, calls to action, and contact details.
+For each claim, also write a short search query in the vocabulary a prescribing label would use, such as "atopic dermatitis" for eczema, "chronic spontaneous urticaria" for hives, and endpoint names like "IGA 0 or 1" or "EASI-75".`;
 
 const JUDGE_SYSTEM = `You judge one promotional claim against excerpts from the drug's FDA prescribing information.
 Verdicts:

@@ -28,9 +28,9 @@ describe("check", () => {
   it("drops claims the model invented and keeps the real ones in order", async () => {
     const model = scripted(
       [
-        { text: "Now approved for chronic hives in toddlers.", kind: "indication" },
-        { text: "Works in one day.", kind: "efficacy" },
-        { text: "Clear or almost-clear skin at week 16.", kind: "efficacy" },
+        { text: "Now approved for chronic hives in toddlers.", kind: "indication", query: "" },
+        { text: "Works in one day.", kind: "efficacy", query: "" },
+        { text: "Clear or almost-clear skin at week 16.", kind: "efficacy", query: "" },
       ],
       (_claim, shown) => ({ verdict: "supported", evidence: shown.slice(0, 1), reason: "r" }),
     );
@@ -41,8 +41,22 @@ describe("check", () => {
     ]);
   });
 
+  it("searches the label with the extraction query as well as the claim", async () => {
+    let shown: string[] = [];
+    const piece = "Clears eczema.";
+    const model = scripted(
+      [{ text: "Clears eczema.", kind: "efficacy", query: "atopic dermatitis IGA 0 or 1 Week 16 adult" }],
+      (_claim, ids) => {
+        shown = ids;
+        return { verdict: "unsupported", evidence: [], reason: "" };
+      },
+    );
+    await check({ piece, label, model });
+    expect(shown).toContain("14.1:12.1");
+  });
+
   it("ignores citations to sentences the model was not shown", async () => {
-    const model = scripted([{ text: "Clear or almost-clear skin at week 16.", kind: "efficacy" }], () => ({
+    const model = scripted([{ text: "Clear or almost-clear skin at week 16.", kind: "efficacy", query: "" }], () => ({
       verdict: "supported",
       evidence: ["99.9:1.1"],
       reason: "made up",
@@ -55,8 +69,8 @@ describe("check", () => {
   it("keeps cited evidence text and sets the exit code from verdicts and rules", async () => {
     const model = scripted(
       [
-        { text: "Clear or almost-clear skin at week 16.", kind: "efficacy" },
-        { text: "Now approved for chronic hives in toddlers.", kind: "indication" },
+        { text: "Clear or almost-clear skin at week 16.", kind: "efficacy", query: "" },
+        { text: "Now approved for chronic hives in toddlers.", kind: "indication", query: "" },
       ],
       (claim, shown) =>
         claim.includes("toddlers")
