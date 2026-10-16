@@ -19,7 +19,7 @@ export function CheckDemo() {
       <div className="creative">
         <Image
           src="/images/lorvexa-ad.png"
-          alt="A print ad for the fictional drug Lorvexa: the headline Live clear, a person with arms raised on a mountain ridge at sunset"
+          alt="A print ad for Lorvexa: the headline Live clear above two hikers seen from behind, arms raised, in a golden field below mountains"
           width={1200}
           height={800}
           sizes="(max-width: 900px) 100vw, 60vw"
