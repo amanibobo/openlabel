@@ -1,4 +1,4 @@
-import type { Report, Verdict } from "@openlabel/check";
+import { VERDICTS, type Report, type Verdict } from "@openlabel/check";
 import { cite } from "@openlabel/label";
 
 type Tone = "ok" | "warn" | "bad" | "dim" | "ink";
@@ -51,9 +51,10 @@ export function formatReport(report: Report, options: { color: boolean; width?: 
     out.push(`  ${paint(tone, `${finding.severity === "violation" ? "✗" : "!"} ${finding.rule}`)}  ${finding.message}`);
   }
 
-  const counts = new Map<Verdict, number>();
-  for (const claim of report.claims) counts.set(claim.verdict, (counts.get(claim.verdict) ?? 0) + 1);
-  const summary = [...counts].map(([verdict, n]) => `${n} ${verdict}`);
+  const summary = VERDICTS.flatMap((verdict) => {
+    const n = report.claims.filter((c) => c.verdict === verdict).length;
+    return n ? [`${n} ${verdict}`] : [];
+  });
   if (report.findings.length) summary.push(`${report.findings.length} rule ${report.findings.length === 1 ? "finding" : "findings"}`);
   summary.push(`exit ${report.exitCode}`);
   out.push("", `  ${summary.join(" · ")}`);

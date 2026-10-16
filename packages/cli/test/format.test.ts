@@ -10,6 +10,10 @@ const report: Report = {
   label: { setId: "595f437d-2729-40bb-9c62-c8ece1f82780" as SetId, version: 60, title: "Dupixent (dupilumab)" },
   claims: [
     {
+      id: "c0", text: "Feel better.", kind: "quality-of-life", query: "", start: 0, end: 1,
+      verdict: "overstated", evidence: [], evidenceText: [], reason: "Vague.",
+    },
+    {
       id: "c1", text: "38% of adults achieved clear skin", kind: "efficacy", query: "", start: 0, end: 1,
       verdict: "supported", evidence: [sentence.id], evidenceText: [sentence], reason: "Table 18 reports 38%.",
     },
@@ -33,7 +37,7 @@ describe("formatReport", () => {
 
   it("lists rule findings and a summary with the exit code", () => {
     expect(text).toContain("✗ isi.present  No Important Safety Information on the piece.");
-    expect(text.split("\n").at(-1)?.trim()).toBe("1 supported · 1 overstated · 1 rule finding · exit 2");
+    expect(text.split("\n").at(-1)?.trim()).toBe("1 supported · 2 overstated · 1 rule finding · exit 2");
   });
 
   it("adds color only when asked", () => {
