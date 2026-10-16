@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Open Label
 
-## Getting Started
+A concept site for open tools that keep every message to a doctor true to the FDA label.
 
-First, run the development server:
+- **Check** matches each claim in a piece, including what its imagery implies, to the label sentence that supports it.
+- **Watch** turns a label revision into the list of approved claims it broke.
+- **Unseen** finds no-see and low-see doctors from public data (NPPES, CMS Part D, Open Payments, ClinicalTrials.gov).
+- **Skills** packages medical affairs agent skills, each with its eval suite.
 
-```bash
+The tools themselves are not built yet. Lorvexa is a fictional drug, and every record and figure on the site is illustrative.
+
+## Run the site
+
+```sh
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## The terminal demo
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The hero video is a real [OpenTUI](https://opentui.com) app in `tui/`, recorded through xterm.js.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```sh
+cd tui
+bun install
+bun run demo     # play it in your terminal
+bun run record   # regenerate public/demo/check.{mp4,webm} and the poster
+```
 
-## Learn More
+## Layout
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `app/content.ts` holds the copy and example data.
+- `app/geo.ts` projects county maps from `us-atlas` at build time.
+- `app/components/` holds the interactive pieces (claim checker, blast radius, map explorer).
+- `assets-src/lorvexa-ad.html` is the source of `public/images/lorvexa-ad.png`.

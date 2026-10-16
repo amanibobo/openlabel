@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; width: 1200px; height: 800px; overflow: hidden; background: #000; }
+  .ad { position: relative; width: 1200px; height: 800px; font-family: "Geist", sans-serif; }
+  svg { position: absolute; inset: 0; }
+  h1 { position: absolute; left: 72px; top: 64px; margin: 0; font-size: 112px; font-weight: 600; letter-spacing: -0.045em; color: #fff; line-height: 1; }
+  p { position: absolute; left: 76px; top: 196px; margin: 0; font-size: 28px; color: rgba(255,255,255,0.9); letter-spacing: -0.01em; }
+  .body { position: absolute; left: 76px; top: 244px; margin: 0; font-size: 19px; color: rgba(255,255,255,0.75); }
+  .mark { position: absolute; right: 64px; bottom: 52px; font-size: 40px; font-weight: 600; letter-spacing: -0.03em; color: #fff; }
+  .mark span { display: block; font-size: 15px; font-weight: 400; letter-spacing: 0; opacity: 0.8; text-align: right; }
+</style>
+</head>
+<body>
+<div class="ad">
+  <svg viewBox="0 0 1200 800" width="1200" height="800">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#2b4a7a"/>
+        <stop offset="0.45" stop-color="#e88f5a"/>
+        <stop offset="0.75" stop-color="#ffc98a"/>
+      </linearGradient>
+      <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="#fff6dc"/>
+        <stop offset="0.35" stop-color="#ffe2a8" stop-opacity="0.95"/>
+        <stop offset="1" stop-color="#ffb070" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="r1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c06a5a"/><stop offset="1" stop-color="#8a4b55"/></linearGradient>
+      <linearGradient id="r2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a3f4f"/><stop offset="1" stop-color="#4b2a3e"/></linearGradient>
+      <linearGradient id="r3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2236"/><stop offset="1" stop-color="#1c1222"/></linearGradient>
+    </defs>
+    <rect width="1200" height="800" fill="url(#sky)"/>
+    <circle cx="820" cy="430" r="260" fill="url(#sun)"/>
+    <circle cx="820" cy="430" r="64" fill="#fff8e6"/>
+    <path d="M0 520 L120 470 L230 500 L360 430 L470 480 L560 440 L700 500 L820 455 L960 505 L1080 460 L1200 490 L1200 800 L0 800 Z" fill="url(#r1)" opacity="0.9"/>
+    <path d="M0 600 L150 540 L260 575 L420 510 L540 560 L660 530 L780 585 L900 540 L1040 600 L1200 560 L1200 800 L0 800 Z" fill="url(#r2)"/>
+    <path d="M0 800 L0 690 L180 650 L330 640 L470 610 L560 596 L640 604 L760 640 L900 668 L1060 700 L1200 720 L1200 800 Z" fill="url(#r3)"/>
+    <g fill="#140c18" transform="translate(560 452)">
+      <circle cx="30" cy="20" r="15"/>
+      <path d="M18 36 Q30 32 42 36 L48 92 L44 146 L36 146 L32 104 L28 104 L24 146 L16 146 L12 92 Z"/>
+      <path d="M20 42 L-14 -6 L-6 -12 L28 38 Z"/>
+      <path d="M40 42 L74 -6 L66 -12 L32 38 Z"/>
+    </g>
+  </svg>
+  <h1>Live clear.</h1>
+  <p>Get back to the life you love.</p>
+  <div class="body">Clear or almost-clear skin at week 16.</div>
+  <div class="mark">Lorvexa<span>(velorimab)</span></div>
+</div>
+</body>
+</html>
