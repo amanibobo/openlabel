@@ -11,6 +11,8 @@ export type Sentence = {
   paragraph: number;
   kind: SentenceKind;
   text: string;
+  // A table row's caption, so "IGA 0 or 1 | 38% | 10%" still says which trial it reports.
+  context?: string;
 };
 
 export type Section = {

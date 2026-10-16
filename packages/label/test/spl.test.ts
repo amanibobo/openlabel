@@ -56,6 +56,11 @@ describe("parseSpl on the Dupixent label", () => {
     expect(rows.some((r) => r.text.includes(" | "))).toBe(true);
   });
 
+  it("labels each table row with its caption", () => {
+    const row = [...allSentences([find(label.sections, "2.3")!])].find((s) => s.kind === "table-row");
+    expect(row?.context).toMatch(/^Table 1: Dosage of DUPIXENT in Pediatric Patients 6 Months to 5 Years/);
+  });
+
   it("gives every sentence a unique id", () => {
     const ids = [...allSentences(label.sections)].map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);

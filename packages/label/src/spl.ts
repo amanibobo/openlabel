@@ -60,7 +60,7 @@ function clean(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
 
-type Block = { kind: SentenceKind; text: string };
+type Block = { kind: SentenceKind; text: string; context?: string };
 
 function blocksOf(text: Node): Block[] {
   const blocks: Block[] = [];
@@ -81,15 +81,16 @@ function blocksOf(text: Node): Block[] {
 
 function tableRows(table: Node): Block[] {
   const rows: Block[] = [];
-  const caption = child(table, "caption");
-  if (caption) rows.push({ kind: "prose", text: textOf(caption) });
+  const captionNode = child(table, "caption");
+  const caption = captionNode ? clean(textOf(captionNode)) : "";
+  if (caption) rows.push({ kind: "prose", text: caption });
   for (const group of childrenOf(table)) {
     for (const row of childrenOf(group).filter((c) => tagOf(c) === "tr")) {
       const cells = childrenOf(row)
         .filter((c) => tagOf(c) === "td" || tagOf(c) === "th")
         .map((c) => clean(textOf(c)))
         .filter(Boolean);
-      if (cells.length) rows.push({ kind: "table-row", text: cells.join(" | ") });
+      if (cells.length) rows.push({ kind: "table-row", text: cells.join(" | "), ...(caption && { context: caption }) });
     }
   }
   return rows;
@@ -141,6 +142,7 @@ function buildSection(node: Node, parentKey?: string, counter?: { paragraph: num
           paragraph: own.paragraph,
           kind: block.kind,
           text,
+          ...(block.context && { context: block.context }),
         });
       });
     }
