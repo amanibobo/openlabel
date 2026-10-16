@@ -63,6 +63,11 @@ describe("blastRadius", () => {
     expect(impacts.map((i) => i.kind)).toEqual(["indication-changed"]);
   });
 
+  it("leaves an indication claim alone when it cites a different indication", () => {
+    const eczema = sentence("1.1", 1, "Lorvexa is indicated for atopic dermatitis.");
+    expect(blastRadius(saved([claim("ad", "indication", [eczema])], false), diff)).toEqual([]);
+  });
+
   it("does not double count a claim already caught through its citation", () => {
     const impacts = blastRadius(saved([claim("who", "indication", [ages])], false), diff);
     expect(impacts.map((i) => i.kind)).toEqual(["cited-sentence-changed"]);

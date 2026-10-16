@@ -28,9 +28,13 @@ export function blastRadius(saved: SavedCheck, diff: LabelDiff): Impact[] {
     }
   }
 
+  // An indication claim is at risk when it rests on the changed indication, or when it
+  // rests on nothing and the change might now cover or exclude it.
   for (const section of diff.sections.filter((s) => s.category === "indication")) {
     for (const claim of saved.claims) {
-      if (claim.kind === "indication" && !touched.has(claim.id)) impacts.push({ kind: "indication-changed", claim, section });
+      if (claim.kind !== "indication" || touched.has(claim.id)) continue;
+      const cited = new Set(claim.evidenceText.map((s) => s.section));
+      if (cited.size === 0 || cited.has(section.section)) impacts.push({ kind: "indication-changed", claim, section });
     }
   }
 
