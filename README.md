@@ -7,12 +7,26 @@ A concept site for open tools that keep every message to a doctor true to the FD
 - **Unseen** finds no-see and low-see doctors from public data (NPPES, CMS Part D, Open Payments, ClinicalTrials.gov).
 - **Skills** packages medical affairs agent skills, each with its eval suite.
 
-The tools themselves are not built yet. Lorvexa is a fictional drug, and every record and figure on the site is illustrative.
+Check works today. Watch, Unseen and Skills are next; see `docs/plan.md`. Lorvexa, the drug on the site, is fictional, and the site's figures are illustrative.
+
+## Check a piece
+
+Check needs an Anthropic API key in `ANTHROPIC_API_KEY` (a `.env` file in the working directory is read automatically).
+
+```sh
+npm install
+npx openlabel check examples/dupixent-email.html --label dupixent
+npx openlabel check examples/dupixent-sms.txt --label dupixent --rules examples/pulse-sms.yaml
+npx openlabel check examples/dupixent-email.html --label dupixent --json
+```
+
+It fetches the current label from DailyMed, pulls every claim out of the piece, finds the label sentences each one could rest on, and asks Claude for a verdict that must cite one of them. Rule packs are YAML and run without a model.
+
+Exit codes: 0 when every claim is supported, 1 for overstated claims or warnings, 2 for off-label or unsupported claims or rule violations, 64 for usage errors, 69 when the check could not run.
 
 ## Run the site
 
 ```sh
-npm install
 npm run dev
 ```
 
@@ -29,5 +43,8 @@ bun run record   # regenerate apps/web/public/demo/check.{mp4,webm} and the post
 
 ## Layout
 
+- `packages/label` fetches labels from DailyMed and parses them into numbered sections and citable sentences.
+- `packages/check` extracts and judges claims and runs rule packs.
+- `packages/cli` is the `openlabel` command.
 - `apps/web` is the site. `app/content.ts` holds its copy and example data, and `app/geo.ts` projects county maps from `us-atlas` at build time.
 - `apps/web/assets-src/lorvexa-ad.html` is the source of `apps/web/public/images/lorvexa-ad.png`. The photo is by [Erik Allen on Pexels](https://www.pexels.com/photo/2589840/).
