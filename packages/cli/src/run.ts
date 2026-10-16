@@ -1,17 +1,26 @@
-import { readFile } from "node:fs/promises";
-import { extname } from "node:path";
+import { readFile, writeFile } from "node:fs/promises";
+import { extname, resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { check, claudeModel, FDA_CORE, loadPack, type ClaimModel } from "@openlabel/check";
+import { check, claudeModel, FDA_CORE, loadPack, sidecarPath, type ClaimModel, type SavedCheck } from "@openlabel/check";
 import { dailyMed, type DailyMed } from "@openlabel/label";
+import { loadLibrary, watchLibrary } from "@openlabel/watch";
 import { formatReport } from "./format.ts";
+import { formatWatch } from "./format-watch.ts";
 
-export const USAGE = `Usage: openlabel check <file> --label <drug name or DailyMed set id> [options]
+export const USAGE = `Usage:
+  openlabel check <file> --label <drug name or DailyMed set id> [options]
+  openlabel watch [folder]
+
+watch reads the reports that check --save left in a folder (default: the current one),
+diffs each piece's label against the current version, and lists what the change touches.
 
 Options:
-  --rules <file>   a YAML rule pack (defaults to fda-core)
-  --json           print the report as JSON
-  --model <id>     Claude model to use (default claude-opus-5-5)
-  -h, --help       show this help
+  --rules <file>         a YAML rule pack (defaults to fda-core)
+  --label-version <n>    check against a past label version instead of the current one
+  --json                 print the report as JSON
+  --save                 write the report next to the piece (<file>.check.json) for watch
+  --model <id>           Claude model to use (default claude-opus-5-5)
+  -h, --help             show this help
 
 Exit codes: 0 all supported, 1 overstated or warning, 2 off-label, unsupported or violation,
 64 usage error, 69 the check could not run (network or API).`;
@@ -53,8 +62,10 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
       allowPositionals: true,
       options: {
         label: { type: "string" },
+        "label-version": { type: "string" },
         rules: { type: "string" },
         json: { type: "boolean", default: false },
+        save: { type: "boolean", default: false },
         model: { type: "string" },
         help: { type: "boolean", short: "h", default: false },
       },
@@ -70,8 +81,25 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
     return 0;
   }
   const [command, file] = positionals;
+  if (command === "watch") {
+    try {
+      const folder = resolve(file ?? ".");
+      const result = await watchLibrary(await loadLibrary(folder), deps.dailyMed ?? dailyMed());
+      io.stdout(values.json ? JSON.stringify(result, null, 2) : formatWatch(result, { color: io.color, cwd: folder }));
+      return result.pieces.some((p) => p.impacts.length) ? 1 : 0;
+    } catch (error) {
+      io.stderr(`openlabel: ${(error as Error).message}`);
+      return 69;
+    }
+  }
   if (command !== "check" || !file || !values.label) {
     io.stderr(USAGE);
+    return 64;
+  }
+
+  const labelVersion = values["label-version"] === undefined ? undefined : Number(values["label-version"]);
+  if (labelVersion !== undefined && !Number.isInteger(labelVersion)) {
+    io.stderr(`openlabel: --label-version must be a whole number\n\n${USAGE}`);
     return 64;
   }
 
@@ -86,9 +114,13 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
   }
 
   try {
-    const label = await (deps.dailyMed ?? dailyMed()).resolve(values.label);
+    const label = await (deps.dailyMed ?? dailyMed()).resolve(values.label, labelVersion);
     const model = (deps.model ?? ((id) => claudeModel(id ? { model: id } : {})))(values.model);
     const report = await check({ piece, label, model, pack });
+    if (values.save) {
+      const saved: SavedCheck = { ...report, checkedAt: new Date().toISOString() };
+      await writeFile(sidecarPath(file), `${JSON.stringify(saved, null, 2)}\n`);
+    }
     io.stdout(values.json ? JSON.stringify(report, null, 2) : formatReport(report, { color: io.color }));
     return report.exitCode;
   } catch (error) {

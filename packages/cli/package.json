@@ -12,6 +12,7 @@
   "dependencies": {
     "@openlabel/check": "*",
     "@openlabel/label": "*",
+    "@openlabel/watch": "*",
     "tsx": "^4.23.15"
   }
 }
