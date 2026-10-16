@@ -1,4 +1,4 @@
-// Records the demo into public/demo/: sizes an xterm.js terminal (WebGL renderer,
+// Records the demo into apps/web/public/demo/: sizes an xterm.js terminal (WebGL renderer,
 // image addon for sixel) in headless Chromium, runs the app in a PTY of that size,
 // captures its byte stream with timestamps, replays it frame by frame into the
 // terminal, and encodes the screenshots with ffmpeg.
@@ -8,7 +8,7 @@ import { join, resolve } from "node:path";
 import { chromium } from "playwright-core";
 
 const TUI = resolve(import.meta.dir, "..");
-const OUT = process.env.OUT_DIR ?? resolve(TUI, "../public/demo");
+const OUT = process.env.OUT_DIR ?? resolve(TUI, "../apps/web/public/demo");
 const WORK = join(tmpdir(), "openlabel-record");
 const CHROME =
   process.env.CHROME_PATH ??

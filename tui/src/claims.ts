@@ -1,4 +1,4 @@
-export const IMAGE_PATH = new URL("../../public/images/lorvexa-ad.png", import.meta.url).pathname;
+export const IMAGE_PATH = new URL("../../apps/web/public/images/lorvexa-ad.png", import.meta.url).pathname;
 export const IMAGE_SIZE = { width: 1200, height: 800 } as const;
 
 export const palette = {
