@@ -54,7 +54,7 @@ export function categoryOf(section: string): Category {
 }
 
 // Inserting one table renumbers every table after it; that is not a change in meaning.
-function normalize(text: string): string {
+export function normalize(text: string): string {
   return text
     .toLowerCase()
     .replace(/\b(table|figure)\s+\d+/g, "$1 #")
