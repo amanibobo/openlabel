@@ -14,7 +14,7 @@ describe("prescribers", () => {
       urls.push(url);
       return Response.json(rows);
     };
-    const result = await prescribers(fetch, { state: "GA", specialty: "Dermatology", drugs: ["Dupilumab"] });
+    const { prescribers: result } = await prescribers(fetch, { state: "GA", specialty: "Dermatology", drugs: ["Dupilumab"] });
 
     expect(result).toHaveLength(new Set(rows.map((r) => r.Prscrbr_NPI)).size);
     const expected = rows.filter((r) => r.Prscrbr_NPI === "1003808361").reduce((sum, r) => sum + Number(r.Tot_Clms), 0);
@@ -38,8 +38,14 @@ describe("prescribers", () => {
       }));
       return Response.json(page);
     };
-    const result = await prescribers(fetch, { state: "GA", specialty: "Dermatology", drugs: ["Dupilumab"] });
+    const { prescribers: result } = await prescribers(fetch, { state: "GA", specialty: "Dermatology", drugs: ["Dupilumab"] });
     expect(calls).toBe(2);
     expect(result).toHaveLength(1003);
+  });
+
+  it("names the drugs Part D has no rows for", async () => {
+    const fetch = async (url: string) => Response.json(decodeURIComponent(url).includes("Daratumumab") ? [] : rows);
+    const result = await prescribers(fetch, { state: "GA", specialty: "Dermatology", drugs: ["Dupilumab", "Daratumumab"] });
+    expect(result.unmatchedDrugs).toEqual(["Daratumumab"]);
   });
 });

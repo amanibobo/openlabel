@@ -18,7 +18,7 @@ async function mapLimit<T, R>(items: readonly T[], limit: number, fn: (item: T) 
 export async function unseen(search: Search, options: { fetch?: Fetch; concurrency?: number } = {}): Promise<UnseenResult> {
   const fetchFn = options.fetch ?? ((url) => fetch(url));
   const concurrency = options.concurrency ?? 8;
-  const ranked = await prescribers(fetchFn, search);
+  const { prescribers: ranked, unmatchedDrugs } = await prescribers(fetchFn, search);
 
   // Payments are the expensive join, so walk the ranking in batches and stop once enough pass.
   const kept: Candidate[] = [];
@@ -39,5 +39,12 @@ export async function unseen(search: Search, options: { fetch?: Fetch; concurren
     return { ...c, location: where, trials: matched };
   });
 
-  return { search, claimsYear: PART_D.year, paymentYears: Object.keys(OPEN_PAYMENTS).map(Number), candidates, scanned };
+  return {
+    search,
+    claimsYear: PART_D.year,
+    paymentYears: Object.keys(OPEN_PAYMENTS).map(Number),
+    candidates,
+    unmatchedDrugs,
+    scanned,
+  };
 }

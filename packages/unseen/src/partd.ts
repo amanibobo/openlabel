@@ -18,8 +18,12 @@ function title(text: string): string {
   return text.toLowerCase().replace(/\b[a-z]/g, (c) => c.toUpperCase());
 }
 
-export async function prescribers(fetchFn: Fetch, search: Pick<Search, "state" | "specialty" | "drugs">): Promise<Prescriber[]> {
+export async function prescribers(
+  fetchFn: Fetch,
+  search: Pick<Search, "state" | "specialty" | "drugs">,
+): Promise<{ prescribers: Prescriber[]; unmatchedDrugs: string[] }> {
   const byNpi = new Map<string, Prescriber>();
+  const unmatchedDrugs: string[] = [];
   for (const drug of search.drugs) {
     for (let offset = 0; ; offset += PAGE) {
       const params = new URLSearchParams({
@@ -32,6 +36,7 @@ export async function prescribers(fetchFn: Fetch, search: Pick<Search, "state" |
       const response = await fetchFn(`https://data.cms.gov/data-api/v1/dataset/${PART_D.dataset}/data?${params}`);
       if (!response.ok) throw new Error(`CMS Part D returned ${response.status}`);
       const rows = (await response.json()) as Row[];
+      if (offset === 0 && rows.length === 0) unmatchedDrugs.push(drug);
       for (const row of rows) {
         // One row per brand form ("Dupixent Pen", "Dupixent Syringe"); a prescriber is the sum.
         const existing = byNpi.get(row.Prscrbr_NPI);
@@ -50,5 +55,5 @@ export async function prescribers(fetchFn: Fetch, search: Pick<Search, "state" |
       if (rows.length < PAGE) break;
     }
   }
-  return [...byNpi.values()].sort((a, b) => b.claims - a.claims);
+  return { prescribers: [...byNpi.values()].sort((a, b) => b.claims - a.claims), unmatchedDrugs };
 }

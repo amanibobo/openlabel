@@ -40,6 +40,8 @@ export type UnseenResult = {
   claimsYear: number;
   paymentYears: number[];
   candidates: Candidate[];
+  // Drugs Part D has no rows for: misspelled, or billed under Part B instead.
+  unmatchedDrugs: string[];
   // Prescribers ranked out before the payment filter, so a reader knows how wide the net was.
   scanned: number;
 };
