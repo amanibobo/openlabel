@@ -44,6 +44,7 @@ export type Claim = {
   id: string;
   verdict: Verdict;
   text: string;
+  quoted: boolean;
   note: string;
   cite: string;
   sentence: string | null;
@@ -55,6 +56,7 @@ export const claims: readonly Claim[] = [
     id: "headline",
     verdict: "overstated",
     text: "Live clear.",
+    quoted: true,
     note: "The headline implies complete clearance. The label reports 38% clear or almost clear at week 16.",
     cite: "§14.1",
     sentence: "s-iga",
@@ -64,6 +66,7 @@ export const claims: readonly Claim[] = [
     id: "body",
     verdict: "supported",
     text: "Clear or almost-clear skin at week 16",
+    quoted: true,
     note: "Matches the primary endpoint wording and timepoint.",
     cite: "§14.1 ¶3",
     sentence: "s-iga",
@@ -73,6 +76,7 @@ export const claims: readonly Claim[] = [
     id: "subhead",
     verdict: "overstated",
     text: "Get back to the life you love.",
+    quoted: true,
     note: "A quality-of-life claim. The label only reports a change in DLQI score.",
     cite: "§14.3",
     sentence: "s-dlqi",
@@ -82,6 +86,7 @@ export const claims: readonly Claim[] = [
     id: "imagery",
     verdict: "imagery",
     text: "Lifestyle image",
+    quoted: false,
     note: "Implies a benefit beyond the skin endpoints studied in §14. FDA cited this pattern repeatedly in its September 2025 letters.",
     cite: "§14",
     sentence: "s-scope",
@@ -91,6 +96,7 @@ export const claims: readonly Claim[] = [
     id: "isi",
     verdict: "missing",
     text: "Important Safety Information",
+    quoted: false,
     note: "No safety information appears on the piece. Rule print.isi-present.",
     cite: "§5",
     sentence: "s-eye",
@@ -142,7 +148,7 @@ export const checkSession: Session = {
     ...claims.map(
       (c): Line => [
         [verdictTone[c.verdict], col(`  ${verdictGlyph[c.verdict]} ${c.verdict}`, 17)],
-        ["out", col(c.verdict === "imagery" || c.verdict === "missing" ? c.text : `"${c.text}"`, 40)],
+        ["out", col(c.quoted ? `"${c.text}"` : c.text, 40)],
         ["dim", c.cite],
       ],
     ),

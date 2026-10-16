@@ -51,7 +51,7 @@ export function CheckDemo() {
               >
                 <span className={`verdict t-${verdictTone[c.verdict]}`}>{c.verdict}</span>
                 <span className="claim-text">
-                  {c.verdict === "imagery" || c.verdict === "missing" ? c.text : `“${c.text}”`}
+                  {c.quoted ? `“${c.text}”` : c.text}
                 </span>
                 <span className="claim-cite">{c.cite}</span>
               </button>
