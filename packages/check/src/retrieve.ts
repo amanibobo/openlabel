@@ -37,7 +37,7 @@ export function retriever(label: Label): Retriever {
     return Math.log(1 + (sentences.length - n + 0.5) / (n + 0.5));
   };
 
-  return (query, kind, k = 8) => {
+  return (query, kind, k = 12) => {
     const terms = [...new Set(tokenize(query))];
     const scored = sentences.map((sentence, i) => {
       const doc = docs[i] ?? [];
@@ -49,11 +49,19 @@ export function retriever(label: Label): Retriever {
       }
       return { sentence, score: inPreferred(sentence, kind) ? score * 1.5 : score };
     });
-    const top = scored
-      .filter((s) => s.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, k)
-      .map((s) => s.sentence);
+    // Results tables repeat the same words row after row; two rows per table leaves
+    // room for other tables and prose.
+    const perTable = new Map<string, number>();
+    const top: Sentence[] = [];
+    for (const { sentence } of scored.filter((s) => s.score > 0).sort((a, b) => b.score - a.score)) {
+      if (top.length === k) break;
+      if (sentence.context) {
+        const used = perTable.get(sentence.context) ?? 0;
+        if (used === 2) continue;
+        perTable.set(sentence.context, used + 1);
+      }
+      top.push(sentence);
+    }
 
     if (kind !== "indication") return top;
     const indications = sentences.filter((s) => inPreferred(s, "indication"));

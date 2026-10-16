@@ -36,6 +36,13 @@ describe("retriever on the Dupixent label", () => {
     expect(indicationSections.size).toBeGreaterThanOrEqual(9);
   });
 
+  it("takes at most two rows from any one table", () => {
+    const hits = retrieve("IGA 0 or 1 responder Week 16 Week 52", "efficacy");
+    const perTable = new Map<string, number>();
+    for (const s of hits) if (s.context) perTable.set(s.context, (perTable.get(s.context) ?? 0) + 1);
+    expect(Math.max(...perTable.values())).toBeLessThanOrEqual(2);
+  });
+
   it("caps non-indication results at k", () => {
     expect(retrieve("dupixent", "other", 3)).toHaveLength(3);
   });
