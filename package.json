@@ -7,6 +7,14 @@
   ],
   "scripts": {
     "dev": "npm run dev -w @openlabel/web",
-    "build": "npm run build -w @openlabel/web"
+    "build": "npm run build -w @openlabel/web",
+    "test": "vitest run --dir packages",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.5"
   }
 }
