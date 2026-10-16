@@ -1,7 +1,7 @@
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { extname } from "node:path";
 import { parseArgs } from "node:util";
-import { check, claudeModel, FDA_CORE, loadPack, type ClaimModel } from "@openlabel/check";
+import { check, claudeModel, FDA_CORE, loadPack, sidecarPath, type ClaimModel, type SavedCheck } from "@openlabel/check";
 import { dailyMed, type DailyMed } from "@openlabel/label";
 import { formatReport } from "./format.ts";
 
@@ -11,6 +11,7 @@ Options:
   --rules <file>         a YAML rule pack (defaults to fda-core)
   --label-version <n>    check against a past label version instead of the current one
   --json                 print the report as JSON
+  --save                 write the report next to the piece (<file>.check.json) for watch
   --model <id>           Claude model to use (default claude-opus-5-5)
   -h, --help             show this help
 
@@ -57,6 +58,7 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
         "label-version": { type: "string" },
         rules: { type: "string" },
         json: { type: "boolean", default: false },
+        save: { type: "boolean", default: false },
         model: { type: "string" },
         help: { type: "boolean", short: "h", default: false },
       },
@@ -97,6 +99,10 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
     const label = await (deps.dailyMed ?? dailyMed()).resolve(values.label, labelVersion);
     const model = (deps.model ?? ((id) => claudeModel(id ? { model: id } : {})))(values.model);
     const report = await check({ piece, label, model, pack });
+    if (values.save) {
+      const saved: SavedCheck = { ...report, checkedAt: new Date().toISOString() };
+      await writeFile(sidecarPath(file), `${JSON.stringify(saved, null, 2)}\n`);
+    }
     io.stdout(values.json ? JSON.stringify(report, null, 2) : formatReport(report, { color: io.color }));
     return report.exitCode;
   } catch (error) {

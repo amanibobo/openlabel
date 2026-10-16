@@ -69,6 +69,15 @@ describe("run", () => {
     expect(JSON.parse(t.out.join("")).claims[0].verdict).toBe("overstated");
   });
 
+  it("saves the report next to the piece when asked", async () => {
+    const file = pieceFile("Live clear.");
+    await run(["check", file, "--label", "dupixent", "--save"], io().io, { dailyMed: fakeDailyMed, model: () => model });
+    const saved = JSON.parse(readFileSync(`${file}.check.json`, "utf8"));
+    expect(saved.label.version).toBe(60);
+    expect(saved.claims[0].evidenceText[0].text).toBeTruthy();
+    expect(Date.parse(saved.checkedAt)).not.toBeNaN();
+  });
+
   it("passes a pinned label version through and rejects a bad one", async () => {
     const t = io();
     await run(["check", pieceFile("Live clear."), "--label", "dupixent", "--label-version", "53"], t.io, {
