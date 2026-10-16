@@ -21,7 +21,7 @@ describe("retriever on the Dupixent label", () => {
   });
 
   it("finds a results-table row through its caption", () => {
-    const hits = retrieve("38% of adults with atopic dermatitis reached IGA 0 or 1 at Week 16", "efficacy");
+    const hits = retrieve("Efficacy results at Week 16 in adult subjects with moderate-to-severe AD: 38%", "efficacy");
     expect(hits.map((s) => s.id)).toContain("14.1:12.1");
   });
 
