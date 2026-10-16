@@ -7,7 +7,7 @@ A concept site for open tools that keep every message to a doctor true to the FD
 - **Unseen** finds no-see and low-see doctors from public data (NPPES, CMS Part D, Open Payments, ClinicalTrials.gov).
 - **Skills** packages medical affairs agent skills, each with its eval suite.
 
-Check and Watch work today. Unseen and Skills are next; see `docs/plan.md`. Lorvexa, the drug on the site, is fictional, and the site's figures are illustrative.
+Check, Watch and Unseen work today. Skills is next; see `docs/plan.md`. Lorvexa, the drug on the site, is fictional, and the site's figures are illustrative.
 
 ## Check a piece
 
@@ -35,6 +35,17 @@ npx openlabel watch approved
 
 `watch` exits 0 when nothing in the folder is affected and 1 when something is, so it can run on a schedule in CI. Inserting a table renumbers every later table; the diff ignores that.
 
+## Find doctors nobody calls on
+
+```sh
+npx openlabel unseen "Georgia dermatologists prescribing dupilumab with under \$100 in industry payments"
+npx openlabel unseen --state MS --specialty Endocrinology --drug Semaglutide --drug Tirzepatide --max-payments 1000
+```
+
+Unseen ranks a specialty's Medicare Part D prescribers of a drug in one state, keeps those whose Open Payments total for 2023 to 2025 is under the limit, and adds their NPPES practice location and any ClinicalTrials.gov site that carries their name. A question in plain language is turned into that search by Claude; the flags skip the model entirely.
+
+Part D 2024 is the newest prescribing year CMS has published, so it runs about two years behind. Part D has no diagnoses and no infused drugs billed under Part B, and ClinicalTrials.gov has no NPIs, so trial matches are leads to check.
+
 ## Run the site
 
 ```sh
@@ -57,6 +68,7 @@ bun run record   # regenerate apps/web/public/demo/check.{mp4,webm} and the post
 - `packages/label` fetches labels from DailyMed and parses them into numbered sections and citable sentences.
 - `packages/check` extracts and judges claims and runs rule packs.
 - `packages/watch` diffs label versions and finds the saved claims a change touches.
+- `packages/unseen` joins CMS Part D, Open Payments, NPPES and ClinicalTrials.gov on NPI.
 - `packages/cli` is the `openlabel` command.
 - `apps/web` is the site. `app/content.ts` holds its copy and example data, and `app/geo.ts` projects county maps from `us-atlas` at build time.
 - `apps/web/assets-src/lorvexa-ad.html` is the source of `apps/web/public/images/lorvexa-ad.png`. The photo is by [Erik Allen on Pexels](https://www.pexels.com/photo/2589840/).
