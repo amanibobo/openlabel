@@ -82,10 +82,6 @@ export default function Home() {
           Pick one to see the evidence.
         </SectionHead>
         <CheckDemo />
-        <p className="sec-foot">
-          Graded on OPDP-Bench, 317 real violations from the 75 untitled and warning letters FDA released in September
-          2025.
-        </p>
       </section>
 
       <section className="sec rail" id="watch">

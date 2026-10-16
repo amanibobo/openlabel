@@ -339,12 +339,6 @@ h1 .rest {
   color: var(--dim);
 }
 
-.sec-foot {
-  margin-top: 14px;
-  font-size: 14px;
-  color: var(--dim);
-}
-
 .tone-ok {
   color: var(--ok);
 }
