@@ -104,38 +104,13 @@ export const claims: readonly Claim[] = [
   },
 ];
 
-export type LabelSection = {
-  heading: string;
-  sentences: readonly { id: string; text: string }[];
+export const labelSentences: Record<string, string> = {
+  "s-eye": "Conjunctivitis and keratitis occurred more frequently in patients who received LORVEXA.",
+  "s-iga":
+    "At Week 16, 38% of patients treated with LORVEXA achieved IGA 0 (clear) or 1 (almost clear), compared to 9% with placebo.",
+  "s-scope": "Efficacy was assessed on skin clearance endpoints through Week 16.",
+  "s-dlqi": "Mean change from baseline in DLQI total score at Week 16 was −6.1 with LORVEXA and −2.3 with placebo.",
 };
-
-export const labelExcerpt: readonly LabelSection[] = [
-  {
-    heading: "5.3 Conjunctivitis and keratitis",
-    sentences: [
-      { id: "s-eye", text: "Conjunctivitis and keratitis occurred more frequently in patients who received LORVEXA." },
-    ],
-  },
-  {
-    heading: "14.1 Plaque psoriasis",
-    sentences: [
-      {
-        id: "s-iga",
-        text: "At Week 16, 38% of patients treated with LORVEXA achieved IGA 0 (clear) or 1 (almost clear), compared to 9% with placebo.",
-      },
-      { id: "s-scope", text: "Efficacy was assessed on skin clearance endpoints through Week 16." },
-    ],
-  },
-  {
-    heading: "14.3 Quality of life",
-    sentences: [
-      {
-        id: "s-dlqi",
-        text: "Mean change from baseline in DLQI total score at Week 16 was −6.1 with LORVEXA and −2.3 with placebo.",
-      },
-    ],
-  },
-];
 
 export const checkSession: Session = {
   title: "openlabel check",

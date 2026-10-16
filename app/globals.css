@@ -338,6 +338,7 @@ h1 .rest {
 .sec-head h2 .rest {
   color: var(--dim);
 }
+
 .sec-foot {
   margin-top: 14px;
   font-size: 14px;
@@ -358,8 +359,9 @@ h1 .rest {
 
 .check-demo {
   display: grid;
-  grid-template-columns: 7fr 5fr;
+  grid-template-columns: 5fr 7fr;
   gap: 12px;
+  align-items: start;
 }
 .creative {
   position: relative;
@@ -376,67 +378,53 @@ h1 .rest {
 }
 .box {
   position: absolute;
-  border: 1.5px solid currentColor;
+  border: 2px solid currentColor;
   border-radius: 8px;
-  background: transparent;
-  cursor: pointer;
-  opacity: 0.45;
-  transition: opacity 0.15s ease, background 0.15s ease;
-}
-.box.on {
-  opacity: 1;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);
+  animation: box-in 0.2s ease;
 }
 .box.dashed {
   border-style: dashed;
 }
-.box.on.tone-ok {
-  background: rgba(124, 199, 154, 0.14);
-}
-.box.on.tone-warn {
-  background: rgba(220, 180, 104, 0.16);
-}
-.box.on.tone-bad {
-  background: rgba(233, 133, 122, 0.16);
+@keyframes box-in {
+  from {
+    opacity: 0;
+  }
 }
 
-.check-side {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.claim-rows {
+.claims {
   list-style: none;
   background: var(--surface);
   border-radius: 14px;
   padding: 6px;
 }
-.claim-rows button {
+.claims li {
+  border-radius: 9px;
+  transition: background 0.15s ease;
+}
+.claims li.on,
+.claims li:hover {
+  background: var(--surface-2);
+}
+.claims button {
   width: 100%;
   display: grid;
-  grid-template-columns: 92px 1fr auto;
+  grid-template-columns: 96px 1fr auto;
   gap: 12px;
   align-items: baseline;
   text-align: left;
-  padding: 10px 12px;
+  padding: 11px 14px;
   border: 0;
-  border-radius: 9px;
   background: transparent;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.15s ease;
-}
-.claim-rows button:hover,
-.claim-rows button.on {
-  background: var(--surface-2);
 }
 .verdict {
-  font-family: var(--mono);
-  font-size: 12.5px;
+  font-size: 13.5px;
 }
 .claim-text {
   font-size: 14.5px;
   color: var(--ink);
-  line-height: 1.35;
   min-width: 0;
 }
 .claim-cite {
@@ -444,53 +432,30 @@ h1 .rest {
   font-size: 12px;
   color: var(--dim);
 }
-
-.evidence {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.claim-detail {
+  padding: 0 14px 14px calc(96px + 26px);
 }
-.paper {
-  background: #f3f1ec;
-  color: #2a2a2a;
-  border-radius: 14px;
-  padding: 18px 20px;
-  font-size: 14px;
-  line-height: 1.55;
-}
-.paper-heading {
-  font-weight: 600;
-  color: #111;
-  font-size: 13px;
-  margin-bottom: 6px;
-}
-.paper-heading span {
-  font-weight: 400;
-  color: #6b675f;
-  margin-left: 8px;
-}
-.paper mark {
-  color: #111;
-  border-radius: 3px;
-  padding: 1px 2px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
-}
-.paper mark.tone-ok {
-  background: #c9ead3;
-}
-.paper mark.tone-warn {
-  background: #f3dfae;
-}
-.paper mark.tone-bad {
-  background: #f6cbc4;
-}
-.evidence-note {
-  padding: 0 4px;
+.claim-detail p {
   font-size: 14px;
   line-height: 1.5;
   color: var(--body);
+}
+.claim-detail blockquote {
+  margin-top: 10px;
+  padding-left: 12px;
+  border-left: 2px solid;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--arg);
+}
+.claim-detail blockquote.tone-ok {
+  border-color: var(--ok);
+}
+.claim-detail blockquote.tone-warn {
+  border-color: var(--warn);
+}
+.claim-detail blockquote.tone-bad {
+  border-color: var(--bad);
 }
 
 /* watch */
@@ -911,11 +876,14 @@ footer .fine a:hover {
   .closing h2 {
     font-size: 26px;
   }
-  .claim-rows button {
-    grid-template-columns: 84px 1fr;
+  .claims button {
+    grid-template-columns: 88px 1fr;
   }
   .claim-cite {
     display: none;
+  }
+  .claim-detail {
+    padding-left: 14px;
   }
   .skill {
     grid-template-columns: 1fr 56px;
