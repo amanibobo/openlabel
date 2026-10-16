@@ -69,9 +69,14 @@ export function dailyMed(options: { fetch?: Fetch; cacheDir?: string } = {}): Da
 
   async function resolve(query: string): Promise<Label> {
     if (/^[0-9a-f-]{36}$/i.test(query)) return label(asSetId(query));
-    const results = await search(query);
     const wanted = query.toLowerCase();
-    const match = results.find((r) => r.title.toLowerCase().startsWith(wanted)) ?? results[0];
+    // "KEYTRUDA (" beats "KEYTRUDA QLEX (", and the manufacturer's own label carries far
+    // more versions than a repackager's copy of it.
+    const score = (r: LabelSummary) => {
+      const title = r.title.toLowerCase();
+      return (title.startsWith(`${wanted} (`) ? 2 : title.startsWith(wanted) ? 1 : 0) * 1e6 + r.version;
+    };
+    const [match] = (await search(query)).sort((a, b) => score(b) - score(a));
     if (!match) throw new Error(`no DailyMed label matches "${query}"`);
     return label(match.setId);
   }

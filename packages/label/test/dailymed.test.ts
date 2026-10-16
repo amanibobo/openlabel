@@ -14,6 +14,8 @@ function fakeDailyMed() {
     if (url.includes("/spls.json")) {
       return Response.json({
         data: [
+          { setid: "00000000-0000-0000-0000-000000000001", title: "DUPIXENT PEN (DUPILUMAB)", spl_version: 90, published_date: "x" },
+          { setid: "00000000-0000-0000-0000-000000000002", title: "DUPIXENT (DUPILUMAB) [REPACKAGER]", spl_version: 2, published_date: "x" },
           { setid: SET_ID, title: "DUPIXENT (DUPILUMAB) INJECTION", spl_version: 60, published_date: "Aug 07, 2026" },
         ],
       });
@@ -29,7 +31,7 @@ function fakeDailyMed() {
 }
 
 describe("dailyMed", () => {
-  it("resolves a brand name to its label", async () => {
+  it("prefers the exact brand, then the most-versioned label", async () => {
     const { client } = fakeDailyMed();
     const label = await client.resolve("dupixent");
     expect(label.setId).toBe(SET_ID);
