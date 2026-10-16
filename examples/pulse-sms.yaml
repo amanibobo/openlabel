@@ -1,0 +1,10 @@
+pack: pulse-sms
+extends: fda-core
+rules:
+  - id: sms.isi-link
+    type: require
+    pattern: "https?://\\S+"
+    message: Every text needs a link to current safety information.
+  - id: sms.length
+    type: max-length
+    max: 160
