@@ -79,7 +79,7 @@ export default function Home() {
 
       <section className="sec rail" id="check">
         <SectionHead name="Check" command="openlabel check" title="Every claim, traced to a sentence in the label.">
-          Pick one to see the evidence.
+          Pick one to see why.
         </SectionHead>
         <CheckDemo />
       </section>
