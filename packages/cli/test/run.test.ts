@@ -106,7 +106,7 @@ describe("run watch", () => {
     const current = { label: async () => label } as unknown as DailyMed;
     const t = io();
     expect(await run(["watch", join(file, "..")], t.io, { dailyMed: current })).toBe(0);
-    expect(t.out.join("")).toContain("checked against the current label");
+    expect(t.out.join("")).toContain(`✓ ${file.split("/").at(-1)}  checked against the current label`);
   });
 
   it("exits 69 when the folder does not exist", async () => {

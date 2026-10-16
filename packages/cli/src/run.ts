@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { extname } from "node:path";
+import { extname, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { check, claudeModel, FDA_CORE, loadPack, sidecarPath, type ClaimModel, type SavedCheck } from "@openlabel/check";
 import { dailyMed, type DailyMed } from "@openlabel/label";
@@ -83,8 +83,9 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
   const [command, file] = positionals;
   if (command === "watch") {
     try {
-      const result = await watchLibrary(await loadLibrary(file ?? "."), deps.dailyMed ?? dailyMed());
-      io.stdout(values.json ? JSON.stringify(result, null, 2) : formatWatch(result, { color: io.color }));
+      const folder = resolve(file ?? ".");
+      const result = await watchLibrary(await loadLibrary(folder), deps.dailyMed ?? dailyMed());
+      io.stdout(values.json ? JSON.stringify(result, null, 2) : formatWatch(result, { color: io.color, cwd: folder }));
       return result.pieces.some((p) => p.impacts.length) ? 1 : 0;
     } catch (error) {
       io.stderr(`openlabel: ${(error as Error).message}`);
