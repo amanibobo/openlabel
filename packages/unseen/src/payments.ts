@@ -46,15 +46,19 @@ async function yearTotals(fetchFn: Fetch, npi: Npi, dataset: string) {
 }
 
 export async function payments(fetchFn: Fetch, npi: Npi, years = Object.keys(OPEN_PAYMENTS).map(Number)): Promise<Payments> {
+  const results = await Promise.all(
+    years.map((year) => {
+      const dataset = OPEN_PAYMENTS[year];
+      if (!dataset) throw new Error(`no Open Payments dataset for ${year}`);
+      return yearTotals(fetchFn, npi, dataset);
+    }),
+  );
   const byYear: Record<number, number> = {};
   const byPayer = new Map<string, number>();
-  for (const year of years) {
-    const dataset = OPEN_PAYMENTS[year];
-    if (!dataset) throw new Error(`no Open Payments dataset for ${year}`);
-    const result = await yearTotals(fetchFn, npi, dataset);
-    byYear[year] = Math.round(result.total * 100) / 100;
+  results.forEach((result, i) => {
+    byYear[years[i]!] = Math.round(result.total * 100) / 100;
     for (const [payer, amount] of result.byPayer) byPayer.set(payer, (byPayer.get(payer) ?? 0) + amount);
-  }
+  });
   const top = [...byPayer].sort((a, b) => b[1] - a[1])[0];
   const total = Object.values(byYear).reduce((sum, n) => sum + n, 0);
   return { total: Math.round(total * 100) / 100, byYear, topPayer: top ? top[0] : null };

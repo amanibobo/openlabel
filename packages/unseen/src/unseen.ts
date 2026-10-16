@@ -17,7 +17,7 @@ async function mapLimit<T, R>(items: readonly T[], limit: number, fn: (item: T) 
 
 export async function unseen(search: Search, options: { fetch?: Fetch; concurrency?: number } = {}): Promise<UnseenResult> {
   const fetchFn = options.fetch ?? ((url) => fetch(url));
-  const concurrency = options.concurrency ?? 4;
+  const concurrency = options.concurrency ?? 8;
   const ranked = await prescribers(fetchFn, search);
 
   // Payments are the expensive join, so walk the ranking in batches and stop once enough pass.
