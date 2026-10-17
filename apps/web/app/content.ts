@@ -2,7 +2,6 @@ import type { Verdict } from "@openlabel/lorvexa";
 
 export const github = "https://github.com/amanibobo/openlabel";
 export const docs = "https://au-2a4a5dc8.mintlify.app";
-export const youtube = "https://www.youtube.com/";
 
 /* Check */
 
