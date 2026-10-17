@@ -851,7 +851,7 @@ footer .fine a:hover {
     padding-left: 16px;
     padding-right: 16px;
   }
-  .site-head nav a:not(:last-child) {
+  .site-head nav a[href^="#"] {
     display: none;
   }
   h1 {
