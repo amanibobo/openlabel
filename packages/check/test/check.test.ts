@@ -83,4 +83,23 @@ describe("check", () => {
     expect(report.findings).toEqual([]);
     expect(report.exitCode).toBe(2);
   });
+
+  it("reports progress through extraction and each judged claim", async () => {
+    const events: string[] = [];
+    const model = scripted(
+      [
+        { text: "Clear or almost-clear skin at week 16.", kind: "efficacy", query: "" },
+        { text: "Now approved for chronic hives in toddlers.", kind: "indication", query: "" },
+      ],
+      (_claim, shown) => ({ verdict: "supported", evidence: shown.slice(0, 1), reason: "r" }),
+    );
+    await check({
+      piece: PIECE,
+      label,
+      model,
+      concurrency: 1,
+      onProgress: (p) => events.push(p.phase === "judging" ? `judging ${p.done}/${p.total}${p.claim ? ` ${p.claim.verdict}` : ""}` : p.phase),
+    });
+    expect(events).toEqual(["extracting", "judging 0/2", "judging 1/2 supported", "judging 2/2 supported"]);
+  });
 });

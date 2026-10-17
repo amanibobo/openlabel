@@ -5,12 +5,17 @@ import { retriever } from "./retrieve.ts";
 import { FDA_CORE, runRules, type RulePack } from "./rules.ts";
 import { exitCodeFor, type CheckedClaim, type Claim, type Report } from "./types.ts";
 
+export type Progress =
+  | { phase: "extracting" }
+  | { phase: "judging"; done: number; total: number; claim?: CheckedClaim };
+
 export type CheckOptions = {
   piece: string;
   label: Label;
   model: ClaimModel;
   pack?: RulePack;
   concurrency?: number;
+  onProgress?: (progress: Progress) => void;
 };
 
 export function locate(piece: string, text: string): { start: number; end: number } | null {
@@ -22,7 +27,8 @@ export function locate(piece: string, text: string): { start: number; end: numbe
   return match ? { start: match.index, end: match.index + match[0].length } : null;
 }
 
-export async function check({ piece, label, model, pack = FDA_CORE, concurrency = 4 }: CheckOptions): Promise<Report> {
+export async function check({ piece, label, model, pack = FDA_CORE, concurrency = 4, onProgress }: CheckOptions): Promise<Report> {
+  onProgress?.({ phase: "extracting" });
   const extracted = await model.extract(piece, label.title);
   const seen = new Set<string>();
   const claims: Claim[] = [];
@@ -34,12 +40,16 @@ export async function check({ piece, label, model, pack = FDA_CORE, concurrency 
   }
 
   const retrieve = retriever(label);
+  let done = 0;
+  onProgress?.({ phase: "judging", done, total: claims.length });
   const judged = await mapLimit(claims, concurrency, async (claim): Promise<CheckedClaim> => {
     const candidates = retrieve(`${claim.query} ${claim.text}`, claim.kind);
     const raw = await model.judge({ labelTitle: label.title, claim: claim.text, kind: claim.kind, candidates });
     const evidenceText = candidates.filter((s) => raw.evidence.includes(s.id));
     const verdict = raw.verdict === "supported" && evidenceText.length === 0 ? "unsupported" : raw.verdict;
-    return { ...claim, verdict, evidence: evidenceText.map((s) => s.id), evidenceText, reason: raw.reason };
+    const checked = { ...claim, verdict, evidence: evidenceText.map((s) => s.id), evidenceText, reason: raw.reason };
+    onProgress?.({ phase: "judging", done: ++done, total: claims.length, claim: checked });
+    return checked;
   });
   judged.sort((a, b) => a.start - b.start);
 
