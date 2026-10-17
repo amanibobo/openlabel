@@ -1,0 +1,57 @@
+---
+title: "Quickstart"
+description: "Install the CLI and check your first piece against a real label."
+---
+
+<Steps>
+  <Step title="Install">
+    Open Label needs Node 22 or later.
+
+    ```sh
+    git clone https://github.com/amanibobo/openlabel
+    cd openlabel
+    npm install
+    npm link -w openlabel
+    ```
+
+    `npm link` puts the `openlabel` command on your path. Without it, run `npx openlabel` from the repo.
+  </Step>
+  <Step title="Add an Anthropic API key">
+    Check, the plain-language form of Unseen, and the skill evals call Claude. Put your key in a `.env` file in the directory you run the command from:
+
+    ```sh
+    echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
+    ```
+
+    `.env` is in `.gitignore`. Search, diff, watch and Unseen with flags need no key.
+  </Step>
+  <Step title="Check a piece">
+    The repo ships an example HCP email for Dupixent.
+
+    ```sh
+    openlabel check examples/dupixent-email.html --label dupixent
+    ```
+
+    ```text
+    Dupixent (dupilumab) · label v60 · 5 claims
+
+      ✓ supported    “38% of adults achieved clear or almost-clear skin (IGA 0 or 1) at Week 16, compared with 10% on placebo”  §14.1 ¶5, §14.1 ¶12
+                     Table 18 reports IGA 0 or 1 at Week 16 in 38% of DUPIXENT-treated adults with
+                     moderate-to-severe atopic dermatitis versus 10% on placebo, which matches the claim.
+      ~ overstated   “Now approved for chronic hives in children as young as 2”  §1.7 ¶1, §1.7 ¶3
+                     The label approves Dupixent from age 2 only for chronic spontaneous urticaria that
+                     stays symptomatic despite H1 antihistamines and excludes other forms of urticaria.
+      ...
+
+      3 overstated · 2 supported · 1 rule finding · exit 1
+    ```
+  </Step>
+  <Step title="Look something up">
+    ```sh
+    openlabel search dupixent "conjunctivitis and keratitis"
+    openlabel diff dupixent --from 53
+    ```
+  </Step>
+</Steps>
+
+Labels are cached under `~/.cache/openlabel/labels` by set id and version, so a second run against the same label makes no network request for it.
