@@ -41,4 +41,9 @@ describe("openLabelTools", () => {
     const indication = result.sections.find((s: { section: string }) => s.section === "1.7");
     expect(indication.changes[0].after).toMatch(/aged 2 years and older/);
   });
+
+  it("diff names the drug when it has no earlier version", async () => {
+    const single = openLabelTools({ dailyMed: memoryDailyMed([v53]), model });
+    await expect(single.diff({ drug: "dupixent" })).rejects.toThrow("Dupixent (dupilumab) has no earlier version on DailyMed");
+  });
 });
