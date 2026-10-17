@@ -115,6 +115,27 @@ describe("run watch", () => {
   });
 });
 
+describe("run diff", () => {
+  const v53 = parseSpl(readFileSync(new URL("../../label/test/fixtures/dupixent-v53.xml", import.meta.url), "utf8"));
+  const v58 = parseSpl(readFileSync(new URL("../../label/test/fixtures/dupixent-v58.xml", import.meta.url), "utf8"));
+  const client = {
+    resolve: async () => v58,
+    versions: async () => [{ version: 58 }, { version: 53 }],
+    label: async (_id: string, version?: number) => (version === 53 ? v53 : v58),
+  } as unknown as DailyMed;
+
+  it("compares the current label with the one before it by default", async () => {
+    const t = io();
+    expect(await run(["diff", "dupixent"], t.io, { dailyMed: client })).toBe(0);
+    expect(t.out.join("")).toContain("v53 (2026-02-23) to v58");
+    expect(t.out.join("")).toContain("+ DUPIXENT is indicated for the treatment of adult and pediatric patients aged 2 years and older with chronic spontaneous urticaria");
+  });
+
+  it("exits 64 for a version that is not a number", async () => {
+    expect(await run(["diff", "dupixent", "--from", "old"], io().io, { dailyMed: client })).toBe(64);
+  });
+});
+
 describe("run unseen", () => {
   const empty = async (search: Search): Promise<UnseenResult> => ({
     search, claimsYear: 2024, paymentYears: [2023, 2024, 2025], candidates: [], unmatchedDrugs: [], scanned: 0,

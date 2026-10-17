@@ -4,7 +4,8 @@ import { parseArgs } from "node:util";
 import { check, claudeModel, FDA_CORE, loadPack, sidecarPath, type ClaimModel, type SavedCheck } from "@openlabel/check";
 import { dailyMed, type DailyMed } from "@openlabel/label";
 import { claudeQueryParser, unseen, type ParseQuery, type Search, type UnseenResult } from "@openlabel/unseen";
-import { loadLibrary, watchLibrary } from "@openlabel/watch";
+import { diffLabels, loadLibrary, watchLibrary } from "@openlabel/watch";
+import { formatDiff } from "./format-diff.ts";
 import { formatReport } from "./format.ts";
 import { formatUnseen } from "./format-unseen.ts";
 import { formatWatch } from "./format-watch.ts";
@@ -12,10 +13,14 @@ import { formatWatch } from "./format-watch.ts";
 export const USAGE = `Usage:
   openlabel check <file> --label <drug name or DailyMed set id> [options]
   openlabel watch [folder]
+  openlabel diff <drug> [--from <version>] [--to <version>]
   openlabel unseen "<question>"   or   openlabel unseen --state GA --specialty Dermatology --drug Dupilumab
 
 unseen ranks a specialty's Medicare Part D prescribers of a drug in a state and keeps the ones
 with little or no industry money (Open Payments), with practice locations and possible trial sites.
+
+diff prints every sentence that changed between two versions of a label (default: the
+current version and the one before it).
 
 watch reads the reports that check --save left in a folder (default: the current one),
 diffs each piece's label against the current version, and lists what the change touches.
@@ -86,6 +91,8 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
         drug: { type: "string", multiple: true },
         "max-payments": { type: "string" },
         limit: { type: "string" },
+        from: { type: "string" },
+        to: { type: "string" },
       },
     });
   } catch (error) {
@@ -105,6 +112,26 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
       const result = await watchLibrary(await loadLibrary(folder), deps.dailyMed ?? dailyMed());
       io.stdout(values.json ? JSON.stringify(result, null, 2) : formatWatch(result, { color: io.color, cwd: folder }));
       return result.pieces.some((p) => p.impacts.length) ? 1 : 0;
+    } catch (error) {
+      io.stderr(`openlabel: ${(error as Error).message}`);
+      return 69;
+    }
+  }
+  if (command === "diff") {
+    const versionOf = (value: string | undefined) => (value === undefined ? undefined : Number(value));
+    const [fromVersion, toVersion] = [versionOf(values.from), versionOf(values.to)];
+    if (!file || [fromVersion, toVersion].some((v) => v !== undefined && !Number.isInteger(v))) {
+      io.stderr(USAGE);
+      return 64;
+    }
+    try {
+      const client = deps.dailyMed ?? dailyMed();
+      const after = await client.resolve(file, toVersion);
+      const previous = fromVersion ?? (await client.versions(after.setId)).find((v) => v.version < after.version)?.version;
+      if (previous === undefined) throw new Error(`${after.title} has no earlier version on DailyMed`);
+      const diff = diffLabels(await client.label(after.setId, previous), after);
+      io.stdout(values.json ? JSON.stringify(diff, null, 2) : formatDiff(diff, { color: io.color }));
+      return 0;
     } catch (error) {
       io.stderr(`openlabel: ${(error as Error).message}`);
       return 69;
