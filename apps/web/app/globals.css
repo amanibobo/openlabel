@@ -83,6 +83,23 @@ body {
 .site-head nav a:hover {
   color: var(--ink);
 }
+.site-head nav {
+  align-items: center;
+}
+.site-head nav .nav-docs {
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 500;
+}
+.site-head nav .nav-docs:hover {
+  background: #fff;
+  color: var(--bg);
+}
 
 .hero {
   padding-top: 112px;

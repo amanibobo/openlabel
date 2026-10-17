@@ -60,8 +60,10 @@ export default function Home() {
           <a href="#watch">Watch</a>
           <a href="#unseen">Unseen</a>
           <a href="#skills">Skills</a>
-          <a href={docs}>Docs</a>
           <a href={github}>GitHub</a>
+          <a className="nav-docs" href={docs}>
+            Docs
+          </a>
         </nav>
       </header>
 
