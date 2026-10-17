@@ -16,12 +16,23 @@ openlabel check <file> --label <drug or set id> [options]
 | `--rules <file>` | A YAML [rule pack](/concepts/rule-packs). Defaults to `fda-core` |
 | `--save` | Also write the report to `<file>.check.json` for [`watch`](/cli/watch) |
 | `--json` | Print the report as JSON |
+| `--plain` | Print text even at a terminal, instead of the interactive screen |
 | `--provider <name>` | Which model provider to use. See [Models and providers](/cli/overview#models-and-providers) |
 | `--model <id>` | Model id. Defaults to `claude-opus-5-5` on Anthropic; required elsewhere |
 
 ```sh
 openlabel check examples/dupixent-sms.txt --label dupixent --rules examples/pulse-sms.yaml
 ```
+
+## Interactive screen
+
+Run under [Bun](https://bun.sh) at a terminal and `check` opens a full-screen view built with OpenTUI: claims down the left as they are judged, the selected claim's reason and every label sentence it cites on the right, rule findings and a live summary at the bottom. Arrow keys or `j` and `k` move between claims, and `q` quits and prints the plain report so it stays in your scrollback.
+
+```sh
+bun packages/cli/src/main.ts check examples/dupixent-email.html --label dupixent
+```
+
+Under Node, through `npx`, or when output goes to a file or another program, `check` prints the plain report with a live status line on stderr. `--json` and `--plain` always print text. Quitting before the check finishes exits 130.
 
 ## JSON output
 

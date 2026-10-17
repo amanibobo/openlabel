@@ -2,7 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
-import { check, claimModel, FDA_CORE, loadPack, retriever, sidecarPath, type ClaimModel, type SavedCheck } from "@openlabel/check";
+import { check, claimModel, FDA_CORE, loadPack, retriever, sidecarPath, type ClaimModel, type Progress, type SavedCheck } from "@openlabel/check";
 import { cite, dailyMed, type DailyMed } from "@openlabel/label";
 import { anthropicLlm, llmFromEnv, type Llm } from "@openlabel/llm";
 import { queryParser, unseen, type ParseQuery, type Search, type UnseenResult } from "@openlabel/unseen";
@@ -42,6 +42,7 @@ Options:
   --rules <file>         a YAML rule pack (defaults to fda-core)
   --label-version <n>    check against a past label version instead of the current one
   --json                 print the report as JSON
+  --plain                print text even at a terminal, instead of the interactive screen
   --save                 write the report next to the piece (<file>.check.json) for watch
   --provider <name>      anthropic, openai, openrouter, gemini, groq or ollama (default: the first
                          whose key is set: ANTHROPIC_API_KEY, OPENAI_API_KEY, OPENROUTER_API_KEY,
@@ -60,6 +61,10 @@ Exit codes: 0 all supported, 1 overstated or warning, 2 off-label, unsupported o
 export type Io = {
   stdout: (text: string) => void;
   stderr: (text: string) => void;
+  // A status line that the next one replaces; null clears it. Absent when nobody is watching.
+  status?: (text: string | null) => void;
+  // True when a person is at a terminal and the OpenTUI screen can run (under Bun).
+  interactive?: boolean;
   color: boolean;
 };
 
@@ -93,6 +98,11 @@ export function pieceText(file: string, raw: string): string {
     .join("\n");
 }
 
+export function describeProgress(progress: Progress): string {
+  if (progress.phase === "extracting") return "extracting claims";
+  return progress.total === 0 ? "no claims found" : `judging claims ${progress.done}/${progress.total}`;
+}
+
 export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<number> {
   // Returns null after reporting a setup problem (unknown provider, missing key or model).
   const makeLlm = (values: { provider?: string | undefined; model?: string | undefined }): Llm | null => {
@@ -114,6 +124,7 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
         "label-version": { type: "string" },
         rules: { type: "string" },
         json: { type: "boolean", default: false },
+        plain: { type: "boolean", default: false },
         save: { type: "boolean", default: false },
         model: { type: "string" },
         provider: { type: "string" },
@@ -286,17 +297,42 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
     return 64;
   }
 
-  try {
-    const label = await (deps.dailyMed ?? dailyMed()).resolve(values.label, labelVersion);
-    const model = deps.model ? deps.model(values.model) : claimModel(llm!);
-    const report = await check({ piece, label, model, pack });
+  const model = deps.model ? deps.model(values.model) : claimModel(llm!);
+  const labelQuery = values.label;
+  const runCheck = async (hooks: { label: (title: string) => void; progress: (p: Progress) => void }) => {
+    const label = await (deps.dailyMed ?? dailyMed()).resolve(labelQuery, labelVersion);
+    hooks.label(`${label.title} · label v${label.version}`);
+    const report = await check({ piece, label, model, pack, onProgress: hooks.progress });
     if (values.save) {
       const saved: SavedCheck = { ...report, checkedAt: new Date().toISOString() };
       await writeFile(sidecarPath(file), `${JSON.stringify(saved, null, 2)}\n`);
     }
+    return report;
+  };
+
+  // A person at a terminal under Bun gets the OpenTUI screen; scripts and --json get text.
+  if (io.interactive && !values.json && !values.plain) {
+    const { checkUi } = await import("./ui/check-ui.ts");
+    const { report, error } = await checkUi(file, labelQuery, runCheck);
+    if (report) {
+      io.stdout(formatReport(report, { color: io.color }));
+      return report.exitCode;
+    }
+    if (error) {
+      io.stderr(`openlabel: ${error}`);
+      return 69;
+    }
+    return 130;
+  }
+
+  try {
+    io.status?.(`fetching the ${labelQuery} label`);
+    const report = await runCheck({ label: () => {}, progress: (p) => io.status?.(describeProgress(p)) });
+    io.status?.(null);
     io.stdout(values.json ? JSON.stringify(report, null, 2) : formatReport(report, { color: io.color }));
     return report.exitCode;
   } catch (error) {
+    io.status?.(null);
     io.stderr(`openlabel: ${(error as Error).message}`);
     return 69;
   }

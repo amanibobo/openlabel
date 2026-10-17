@@ -17,6 +17,7 @@
     "@openlabel/skills": "*",
     "@openlabel/unseen": "*",
     "@openlabel/watch": "*",
+    "@opentui/core": "0.6.6",
     "tsx": "^4.23.15"
   }
 }

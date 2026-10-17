@@ -61,6 +61,16 @@ describe("run", () => {
     expect(t.out.join("")).toContain("✗ isi.present");
   });
 
+  it("shows progress on the status line and clears it before the report", async () => {
+    const statuses: (string | null)[] = [];
+    const t = io();
+    await run(["check", pieceFile("Live clear."), "--label", "dupixent"], { ...t.io, status: (s) => statuses.push(s) }, {
+      dailyMed: fakeDailyMed,
+      model: () => model,
+    });
+    expect(statuses).toEqual(["fetching the dupixent label", "extracting claims", "judging claims 0/1", "judging claims 1/1", null]);
+  });
+
   it("prints JSON when asked", async () => {
     const t = io();
     await run(["check", pieceFile("Live clear."), "--label", "dupixent", "--json"], t.io, {

@@ -22,6 +22,8 @@ npx openlabel check examples/dupixent-sms.txt --label dupixent --rules examples/
 npx openlabel check examples/dupixent-email.html --label dupixent --json
 ```
 
+Run it with [Bun](https://bun.sh) at a terminal (`bun packages/cli/src/main.ts check …`) to get a full-screen, keyboard-driven view built with OpenTUI instead of plain text; `--plain` turns it off.
+
 It fetches the current label from DailyMed, pulls every claim out of the piece, finds the label sentences each one could rest on, and asks Claude for a verdict that must cite one of them. Rule packs are YAML and run without a model.
 
 Exit codes: 0 when every claim is supported, 1 for overstated claims or warnings, 2 for off-label or unsupported claims or rule violations, 64 for usage errors, 69 when the check could not run.
