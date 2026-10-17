@@ -13,7 +13,7 @@ All four work today. See `docs/plan.md` for how they fit together. Lorvexa, the 
 
 ## Check a piece
 
-Check needs an Anthropic API key in `ANTHROPIC_API_KEY` (a `.env` file in the working directory is read automatically).
+Check needs a model key, read from a `.env` file in the working directory or the environment. Claude (`ANTHROPIC_API_KEY`) is the default; OpenAI, OpenRouter, Gemini, Groq and a local Ollama work too with `--provider` and `--model`. See [Models and providers](https://au-2a4a5dc8.mintlify.app/cli/overview#models-and-providers).
 
 ```sh
 npm install
