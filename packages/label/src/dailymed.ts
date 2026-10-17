@@ -29,6 +29,22 @@ async function getJson(fetchFn: Fetch, url: string): Promise<unknown> {
   return response.json();
 }
 
+function resolver(search: DailyMed["search"], label: DailyMed["label"]): DailyMed["resolve"] {
+  return async (query, version) => {
+    if (/^[0-9a-f-]{36}$/i.test(query)) return label(asSetId(query), version);
+    const wanted = query.toLowerCase();
+    // "KEYTRUDA (" beats "KEYTRUDA QLEX (". Among equal titles the label with the most versions
+    // wins, which is usually the manufacturer's own and not a repackager's copy.
+    const score = (r: LabelSummary) => {
+      const title = r.title.toLowerCase();
+      return (title.startsWith(`${wanted} (`) ? 2 : title.startsWith(wanted) ? 1 : 0) * 1e6 + r.version;
+    };
+    const [match] = (await search(query)).sort((a, b) => score(b) - score(a));
+    if (!match) throw new Error(`no DailyMed label matches "${query}"`);
+    return label(match.setId, version);
+  };
+}
+
 export function dailyMed(options: { fetch?: Fetch; cacheDir?: string } = {}): DailyMed {
   const fetchFn = options.fetch ?? ((url) => fetch(url));
   const cacheDir = options.cacheDir ?? defaultCacheDir();
@@ -85,19 +101,36 @@ export function dailyMed(options: { fetch?: Fetch; cacheDir?: string } = {}): Da
     return parsed;
   }
 
-  async function resolve(query: string, version?: number): Promise<Label> {
-    if (/^[0-9a-f-]{36}$/i.test(query)) return label(asSetId(query), version);
-    const wanted = query.toLowerCase();
-    // "KEYTRUDA (" beats "KEYTRUDA QLEX (", and the manufacturer's own label carries far
-    // more versions than a repackager's copy of it.
-    const score = (r: LabelSummary) => {
-      const title = r.title.toLowerCase();
-      return (title.startsWith(`${wanted} (`) ? 2 : title.startsWith(wanted) ? 1 : 0) * 1e6 + r.version;
-    };
-    const [match] = (await search(query)).sort((a, b) => score(b) - score(a));
-    if (!match) throw new Error(`no DailyMed label matches "${query}"`);
-    return label(match.setId, version);
+  return { search, versions, label, resolve: resolver(search, label) };
+}
+
+export function memoryDailyMed(labels: readonly Label[]): DailyMed {
+  const sets = new Map<SetId, Label[]>();
+  for (const l of labels) sets.set(l.setId, [...(sets.get(l.setId) ?? []), l].sort((a, b) => b.version - a.version));
+  const history = (setId: SetId) => {
+    const set = sets.get(setId);
+    if (!set) throw new Error(`DailyMed has no label ${setId}`);
+    return set;
+  };
+
+  async function search(drugName: string): Promise<LabelSummary[]> {
+    const wanted = drugName.toLowerCase();
+    return [...sets.values()]
+      .map(([latest]) => latest!)
+      .filter((l) => l.title.toLowerCase().includes(wanted))
+      .map((l) => ({ setId: l.setId, title: l.title, version: l.version, published: l.effectiveDate }));
   }
 
-  return { search, versions, label, resolve };
+  async function versions(setId: SetId) {
+    return history(setId).map((l) => ({ version: l.version, published: l.effectiveDate }));
+  }
+
+  async function label(setId: SetId, version?: number): Promise<Label> {
+    const set = history(setId);
+    const found = version === undefined ? set[0] : set.find((l) => l.version === version);
+    if (!found) throw new Error(`DailyMed has no version ${version} of ${setId}`);
+    return found;
+  }
+
+  return { search, versions, label, resolve: resolver(search, label) };
 }
