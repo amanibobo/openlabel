@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import type { ClaimModel } from "@openlabel/check";
-import { parseSpl, type DailyMed } from "@openlabel/label";
+import { memoryDailyMed, parseSpl } from "@openlabel/label";
 import { describe, expect, it } from "vitest";
 import { openLabelTools } from "../src/tools.ts";
 
@@ -8,11 +8,7 @@ const load = (v: number) =>
   parseSpl(readFileSync(new URL(`../../label/test/fixtures/dupixent-v${v}.xml`, import.meta.url), "utf8"));
 const [v53, v58] = [load(53), load(58)];
 
-const dailyMed = {
-  resolve: async (_drug: string, version?: number) => (version === 53 ? v53 : v58),
-  versions: async () => [{ version: 58 }, { version: 53 }],
-  label: async (_id: string, version?: number) => (version === 53 ? v53 : v58),
-} as unknown as DailyMed;
+const dailyMed = memoryDailyMed([v53, v58]);
 
 const model: ClaimModel = {
   extract: async () => [{ text: "Live clear.", kind: "efficacy", query: "IGA 0 or 1" }],
@@ -44,5 +40,10 @@ describe("openLabelTools", () => {
     expect([result.from.version, result.to.version]).toEqual([53, 58]);
     const indication = result.sections.find((s: { section: string }) => s.section === "1.7");
     expect(indication.changes[0].after).toMatch(/aged 2 years and older/);
+  });
+
+  it("diff names the drug when it has no earlier version", async () => {
+    const single = openLabelTools({ dailyMed: memoryDailyMed([v53]), model });
+    await expect(single.diff({ drug: "dupixent" })).rejects.toThrow("Dupixent (dupilumab) has no earlier version on DailyMed");
   });
 });

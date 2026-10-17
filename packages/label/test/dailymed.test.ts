@@ -3,7 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { strToU8, zipSync } from "fflate";
 import { describe, expect, it } from "vitest";
-import { dailyMed } from "../src/dailymed.ts";
+import { dailyMed, memoryDailyMed } from "../src/dailymed.ts";
+import { parseSpl } from "../src/spl.ts";
 
 const SET_ID = "595f437d-2729-40bb-9c62-c8ece1f82780";
 const xml = readFileSync(new URL("./fixtures/dupixent-v60.xml", import.meta.url), "utf8");
@@ -71,5 +72,20 @@ describe("dailyMed", () => {
     const fetch = async () => Response.json({ data: [] });
     const client = dailyMed({ fetch, cacheDir: mkdtempSync(join(tmpdir(), "openlabel-")) });
     await expect(client.resolve("nothing")).rejects.toThrow(/no DailyMed label/);
+  });
+});
+
+describe("memoryDailyMed", () => {
+  const client = memoryDailyMed([parseSpl(xml58), parseSpl(xml)]);
+
+  it("resolves a brand name to its newest label, or to a pinned version", async () => {
+    expect((await client.resolve("dupixent")).version).toBe(60);
+    expect((await client.resolve("dupixent", 58)).version).toBe(58);
+    expect((await client.versions(SET_ID as never)).map((v) => v.version)).toEqual([60, 58]);
+  });
+
+  it("refuses a version or a drug it does not hold", async () => {
+    await expect(client.label(SET_ID as never, 53)).rejects.toThrow(/no version 53/);
+    await expect(client.resolve("keytruda")).rejects.toThrow(/no DailyMed label matches "keytruda"/);
   });
 });

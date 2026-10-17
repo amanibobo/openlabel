@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { SavedCheck } from "@openlabel/check";
-import { allSentences, parseSpl, type DailyMed, type Label } from "@openlabel/label";
+import { allSentences, memoryDailyMed, parseSpl, type DailyMed, type Label } from "@openlabel/label";
 import { describe, expect, it } from "vitest";
 import { loadLibrary, watchLibrary } from "../src/library.ts";
 
@@ -13,20 +13,21 @@ const v58 = load(58);
 
 function fakeDailyMed(): { client: DailyMed; fetched: string[] } {
   const fetched: string[] = [];
-  const byVersion: Record<number, Label> = { 53: v53, 58: v58 };
-  const client = {
-    label: async (_setId: string, version?: number) => {
+  const memory = memoryDailyMed([v53, v58]);
+  const client: DailyMed = {
+    ...memory,
+    label: (setId, version) => {
       fetched.push(String(version ?? "current"));
-      return byVersion[version ?? 58]!;
+      return memory.label(setId, version);
     },
-  } as unknown as DailyMed;
+  };
   return { client, fetched };
 }
 
 function savedAgainst(label: Label, claimText: string, sentenceText: RegExp): SavedCheck {
   const cited = [...allSentences(label.sections)].find((s) => sentenceText.test(s.text))!;
   return {
-    piece: claimText,
+    piece: `${claimText} Important Safety Information: ...`,
     label: { setId: label.setId, version: label.version, title: label.title },
     claims: [
       {

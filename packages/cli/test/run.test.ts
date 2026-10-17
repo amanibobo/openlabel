@@ -2,24 +2,15 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ClaimModel } from "@openlabel/check";
-import { parseSpl, type DailyMed } from "@openlabel/label";
+import { memoryDailyMed, parseSpl } from "@openlabel/label";
 import { describe, expect, it } from "vitest";
 import type { Search, UnseenResult } from "@openlabel/unseen";
 import { pieceText, run } from "../src/run.ts";
 
-const label = parseSpl(readFileSync(new URL("../../label/test/fixtures/dupixent-v60.xml", import.meta.url), "utf8"));
-const resolved: (number | undefined)[] = [];
-const fakeDailyMed = {
-  resolve: async (_query: string, version?: number) => {
-    resolved.push(version);
-    return label;
-  },
-} as unknown as DailyMed;
-const offlineDailyMed = {
-  resolve: async () => {
-    throw new Error("fetch failed");
-  },
-} as unknown as DailyMed;
+const fixture = (version: number) =>
+  parseSpl(readFileSync(new URL(`../../label/test/fixtures/dupixent-v${version}.xml`, import.meta.url), "utf8"));
+const [v53, v58, v60] = [fixture(53), fixture(58), fixture(60)];
+const fakeDailyMed = memoryDailyMed([v53, v60]);
 
 const model: ClaimModel = {
   extract: async () => [{ text: "Live clear.", kind: "efficacy", query: "IGA 0 or 1" }],
@@ -43,6 +34,14 @@ describe("run", () => {
     const t = io();
     expect(await run(["check", "piece.md"], t.io)).toBe(64);
     expect(t.err.join("")).toMatch(/openlabel check <file> --label/);
+  });
+
+  it("exits 64 for a command it does not know, including names every object inherits", async () => {
+    for (const command of ["frobnicate", "toString", "constructor"]) {
+      const t = io();
+      expect(await run([command], t.io)).toBe(64);
+      expect(t.err.join("")).toMatch(/^Usage:/);
+    }
   });
 
   it("exits 64 when the piece file does not exist", async () => {
@@ -95,18 +94,18 @@ describe("run", () => {
       dailyMed: fakeDailyMed,
       model: () => model,
     });
-    expect(resolved.at(-1)).toBe(53);
+    expect(t.out.join("")).toContain("label v53");
     expect(await run(["check", pieceFile("x"), "--label", "dupixent", "--label-version", "latest"], io().io)).toBe(64);
   });
 
-  it("exits 69 when the label cannot be fetched", async () => {
+  it("exits 69 when no label matches", async () => {
     const t = io();
     const code = await run(["check", pieceFile("Live clear."), "--label", "dupixent"], t.io, {
-      dailyMed: offlineDailyMed,
+      dailyMed: memoryDailyMed([]),
       model: () => model,
     });
     expect(code).toBe(69);
-    expect(t.err.join("")).toBe("openlabel: fetch failed");
+    expect(t.err.join("")).toBe('openlabel: no DailyMed label matches "dupixent"');
   });
 });
 
@@ -148,9 +147,8 @@ describe("run watch", () => {
   it("exits 0 for a library checked against the current label", async () => {
     const file = pieceFile("Live clear.");
     await run(["check", file, "--label", "dupixent", "--save"], io().io, { dailyMed: fakeDailyMed, model: () => model });
-    const current = { label: async () => label } as unknown as DailyMed;
     const t = io();
-    expect(await run(["watch", join(file, "..")], t.io, { dailyMed: current })).toBe(0);
+    expect(await run(["watch", join(file, "..")], t.io, { dailyMed: memoryDailyMed([v60]) })).toBe(0);
     expect(t.out.join("")).toContain(`✓ ${file.split("/").at(-1)}  checked against the current label`);
   });
 
@@ -208,19 +206,19 @@ describe("run search", () => {
 });
 
 describe("run diff", () => {
-  const v53 = parseSpl(readFileSync(new URL("../../label/test/fixtures/dupixent-v53.xml", import.meta.url), "utf8"));
-  const v58 = parseSpl(readFileSync(new URL("../../label/test/fixtures/dupixent-v58.xml", import.meta.url), "utf8"));
-  const client = {
-    resolve: async () => v58,
-    versions: async () => [{ version: 58 }, { version: 53 }],
-    label: async (_id: string, version?: number) => (version === 53 ? v53 : v58),
-  } as unknown as DailyMed;
+  const client = memoryDailyMed([v53, v58]);
 
   it("compares the current label with the one before it by default", async () => {
     const t = io();
     expect(await run(["diff", "dupixent"], t.io, { dailyMed: client })).toBe(0);
     expect(t.out.join("")).toContain("v53 (2026-02-23) to v58");
     expect(t.out.join("")).toContain("+ DUPIXENT is indicated for the treatment of adult and pediatric patients aged 2 years and older with chronic spontaneous urticaria");
+  });
+
+  it("exits 69 when the label has no earlier version to compare with", async () => {
+    const t = io();
+    expect(await run(["diff", "dupixent"], t.io, { dailyMed: memoryDailyMed([v53]) })).toBe(69);
+    expect(t.err.join("")).toBe("openlabel: Dupixent (dupilumab) has no earlier version on DailyMed");
   });
 
   it("exits 64 for a version that is not a number", async () => {

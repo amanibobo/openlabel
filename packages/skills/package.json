@@ -13,6 +13,7 @@
     "@anthropic-ai/sdk": "*",
     "@openlabel/check": "*",
     "@openlabel/label": "*",
+    "@openlabel/llm": "*",
     "@openlabel/util": "*",
     "@openlabel/watch": "*",
     "yaml": "*",

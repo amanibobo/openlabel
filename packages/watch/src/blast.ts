@@ -1,4 +1,4 @@
-import type { CheckedClaim, SavedCheck } from "@openlabel/check";
+import { carriesSafetyInformation, type CheckedClaim, type SavedCheck } from "@openlabel/check";
 import type { Sentence } from "@openlabel/label";
 import { normalize, type LabelDiff, type SectionChange, type SentenceChange } from "./diff.ts";
 
@@ -38,8 +38,7 @@ export function blastRadius(saved: SavedCheck, diff: LabelDiff): Impact[] {
     }
   }
 
-  const carriesSafetyInformation = !saved.findings.some((f) => f.rule === "isi.present");
-  if (carriesSafetyInformation) {
+  if (carriesSafetyInformation(saved.piece)) {
     for (const section of diff.sections.filter((s) => SAFETY_CATEGORIES.has(s.category))) {
       impacts.push({ kind: "safety-information-outdated", section });
     }

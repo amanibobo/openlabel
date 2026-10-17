@@ -1,9 +1,7 @@
 import { check, FDA_CORE, loadPack, retriever, type ClaimModel } from "@openlabel/check";
 import { cite, type DailyMed } from "@openlabel/label";
-import { diffLabels } from "@openlabel/watch";
+import { diffDrugLabel } from "@openlabel/watch";
 
-// The openlabel commands a skill can run, taking text instead of files so an eval can
-// call them without a shell. Each returns what the command's --json flag would print.
 export type OpenLabelTools = {
   check(input: { piece: string; drug: string; rules?: string | undefined }): Promise<string>;
   search(input: { drug: string; question: string; limit?: number | undefined }): Promise<string>;
@@ -43,10 +41,7 @@ export function openLabelTools(deps: { dailyMed: DailyMed; model: ClaimModel; pa
       });
     },
     async diff({ drug, from, to }) {
-      const after = await deps.dailyMed.resolve(drug, to);
-      const previous = from ?? (await deps.dailyMed.versions(after.setId)).find((v) => v.version < after.version)?.version;
-      if (previous === undefined) throw new Error(`${after.title} has no earlier version`);
-      const diff = diffLabels(await deps.dailyMed.label(after.setId, previous), after);
+      const diff = await diffDrugLabel(deps.dailyMed, drug, { from, to });
       return JSON.stringify({
         title: diff.title,
         from: diff.from,
