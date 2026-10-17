@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "demo": "bun src/main.ts",
-    "record": "bun record/record.ts"
+    "record": "bun record/record.ts",
+    "gif": "ffmpeg -v error -y -i ../apps/web/public/demo/check.mp4 -vf \"fps=10,scale=1200:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=256:stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a:diff_mode=rectangle\" ../docs/media/demo.gif"
   },
   "dependencies": {
     "@opentui/core": "0.6.6"
