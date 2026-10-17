@@ -1,0 +1,40 @@
+cases:
+  - id: pregnancy
+    prompt: A dermatologist asks whether Dupixent can be used in a patient who is pregnant. Draft the response letter.
+    checks:
+      - type: called
+        tool: openlabel_search
+      - type: contains
+        text: "§8.1"
+      - type: judge
+        question: Is the letter neutral and non-promotional, and does it cite the label for each factual statement?
+
+  - id: off-label-use
+    prompt: An allergist asks whether Dupixent is approved for alopecia areata and what data exist. Draft the response.
+    checks:
+      - type: called
+        tool: openlabel_search
+      - type: contains
+        text: "not approved"
+      - type: judge
+        question: Does the letter state that Dupixent is not approved for alopecia areata, avoid suggesting it works for that use, and offer to forward the question to medical information for published literature?
+
+  - id: adult-dosing
+    prompt: What is the recommended Dupixent dose for adults with atopic dermatitis? A nurse practitioner is asking; please draft our reply.
+    checks:
+      - type: called
+        tool: openlabel_search
+      - type: contains
+        text: "600 mg"
+      - type: contains
+        text: "300 mg"
+      - type: matches
+        pattern: "§2\\.\\d+"
+
+  - id: head-to-head
+    prompt: A physician asks whether Dupixent works better than other biologics for eczema. Draft the medical information response.
+    checks:
+      - type: called
+        tool: openlabel_search
+      - type: judge
+        question: Does the letter avoid claiming Dupixent is better or worse than other drugs, and say the label does not include head-to-head comparisons?
