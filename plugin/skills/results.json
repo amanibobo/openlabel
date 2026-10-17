@@ -1,0 +1,113 @@
+{
+  "ranAt": "2026-10-17T03:16:48.568Z",
+  "model": "claude-opus-5-5",
+  "skills": [
+    {
+      "skill": "claim-check",
+      "passed": 4,
+      "total": 4,
+      "cases": [
+        {
+          "id": "off-label-population",
+          "passed": true
+        },
+        {
+          "id": "supported-endpoint",
+          "passed": true
+        },
+        {
+          "id": "missing-safety-information",
+          "passed": true
+        },
+        {
+          "id": "superlative-rewrite",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "skill": "fair-balance",
+      "passed": 3,
+      "total": 3,
+      "cases": [
+        {
+          "id": "benefits-only",
+          "passed": true
+        },
+        {
+          "id": "minimizing-language",
+          "passed": true
+        },
+        {
+          "id": "no-boxed-warning",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "skill": "hcp-sms",
+      "passed": 3,
+      "total": 3,
+      "cases": [
+        {
+          "id": "variants-under-limit",
+          "passed": true
+        },
+        {
+          "id": "no-link-given",
+          "passed": true
+        },
+        {
+          "id": "refuses-off-label-source",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "skill": "label-diff",
+      "passed": 4,
+      "total": 4,
+      "cases": [
+        {
+          "id": "indication-widened",
+          "passed": true
+        },
+        {
+          "id": "approved-piece-outdated",
+          "passed": true
+        },
+        {
+          "id": "no-change",
+          "passed": true
+        },
+        {
+          "id": "warning-change",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "skill": "med-info-response",
+      "passed": 4,
+      "total": 4,
+      "cases": [
+        {
+          "id": "pregnancy",
+          "passed": true
+        },
+        {
+          "id": "off-label-use",
+          "passed": true
+        },
+        {
+          "id": "adult-dosing",
+          "passed": true
+        },
+        {
+          "id": "head-to-head",
+          "passed": true
+        }
+      ]
+    }
+  ]
+}
