@@ -1,0 +1,48 @@
+cases:
+  - id: off-label-population
+    prompt: |
+      Is this ready for MLR? It's for Dupixent.
+
+      Now approved for chronic hives in children as young as 1.
+      Important Safety Information: https://example.com/isi
+    checks:
+      - type: called
+        tool: openlabel_check
+      - type: contains
+        text: "§1.7"
+      - type: judge
+        question: Does the reply say the hives claim is not supported as written (off-label or overstated), rather than calling it supported or ready?
+
+  - id: supported-endpoint
+    prompt: |
+      Check this Dupixent email line against the label:
+
+      In clinical trials, 38% of adults with moderate-to-severe atopic dermatitis achieved clear or almost-clear skin (IGA 0 or 1) at Week 16, compared with 10% on placebo.
+      Important Safety Information: https://example.com/isi
+    checks:
+      - type: called
+        tool: openlabel_check
+      - type: contains
+        text: "§14.1"
+      - type: judge
+        question: Does the reply treat the 38% versus 10% claim as supported by the label?
+
+  - id: missing-safety-information
+    prompt: |
+      Quick check on this Dupixent banner before it goes out: "Clear or almost-clear skin at week 16."
+    checks:
+      - type: called
+        tool: openlabel_check
+      - type: judge
+        question: Does the reply point out that the piece carries no Important Safety Information?
+
+  - id: superlative-rewrite
+    prompt: |
+      Our Dupixent headline is "The only biologic that treats the cause of eczema." Is that OK, and if not, what should it say?
+    checks:
+      - type: called
+        tool: openlabel_check
+      - type: contains
+        text: "§12.1"
+      - type: judge
+        question: Does the reply say the headline is not supported by the label and offer a rewrite that drops both "only" and "the cause"?
