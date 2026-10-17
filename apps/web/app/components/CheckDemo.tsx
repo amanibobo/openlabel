@@ -1,21 +1,33 @@
 "use client";
 
+import { ad, cite, claims, type Evidence } from "@openlabel/lorvexa";
 import Image from "next/image";
 import { useState } from "react";
-import { claims, labelSentences, verdictTone } from "../content";
+import { verdictTone } from "../content";
+
+function EvidenceQuote({ evidence, tone }: { evidence: Evidence; tone: string }) {
+  if (evidence.kind === "rule") return <blockquote className={`tone-${tone}`}>{evidence.text}</blockquote>;
+  return (
+    <blockquote className={`tone-${tone}`}>
+      {evidence.before}
+      <strong>{evidence.span}</strong>
+      {evidence.after}
+    </blockquote>
+  );
+}
 
 export function CheckDemo() {
-  const [activeId, setActiveId] = useState(claims[0].id);
-  const active = claims.find((c) => c.id === activeId) ?? claims[0];
+  const [activeId, setActiveId] = useState(claims[0]!.id);
+  const active = claims.find((c) => c.id === activeId) ?? claims[0]!;
 
   return (
     <div className="check-demo">
       <div className="creative">
         <Image
-          src="/images/lorvexa-ad.png"
+          src={ad.src}
           alt="A print ad for Lorvexa: the headline Live clear above two hikers seen from behind, arms raised, in a golden field below mountains"
-          width={1200}
-          height={800}
+          width={ad.width}
+          height={ad.height}
           sizes="(max-width: 900px) 100vw, 45vw"
         />
         <span
@@ -33,18 +45,17 @@ export function CheckDemo() {
       <ol className="claims">
         {claims.map((c) => {
           const on = c.id === activeId;
-          const sentence = c.sentence ? labelSentences[c.sentence] : undefined;
           return (
             <li key={c.id} className={on ? "on" : undefined}>
               <button type="button" aria-expanded={on} onClick={() => setActiveId(c.id)}>
                 <span className={`verdict t-${verdictTone[c.verdict]}`}>{c.verdict}</span>
                 <span className="claim-text">{c.quoted ? `“${c.text}”` : c.text}</span>
-                <span className="claim-cite">{c.cite}</span>
+                <span className="claim-cite">{cite(c.evidence)}</span>
               </button>
               {on ? (
                 <div className="claim-detail">
                   <p>{c.note}</p>
-                  {sentence ? <blockquote className={`tone-${verdictTone[c.verdict]}`}>{sentence}</blockquote> : null}
+                  <EvidenceQuote evidence={c.evidence} tone={verdictTone[c.verdict]} />
                 </div>
               ) : null}
             </li>

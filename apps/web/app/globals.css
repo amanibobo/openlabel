@@ -426,6 +426,10 @@ h1 .rest {
   line-height: 1.5;
   color: var(--arg);
 }
+.claim-detail blockquote strong {
+  font-weight: 500;
+  color: var(--ink);
+}
 .claim-detail blockquote.tone-ok {
   border-color: var(--ok);
 }
