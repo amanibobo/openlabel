@@ -1,0 +1,51 @@
+---
+title: "Skills"
+description: "Agent skills for medical affairs and HCP engagement, each with the eval suite that grades it."
+---
+
+The repo is a Claude Code plugin marketplace with one plugin, `openlabel-skills`. Its skills give Claude a procedure for common medical affairs work, and they ground every answer in the label through the `openlabel` command.
+
+```sh
+claude plugin marketplace add amanibobo/openlabel
+claude plugin install openlabel-skills@openlabel
+```
+
+The skills call `openlabel`, so link it first (`npm link -w openlabel` from the repo).
+
+| Skill | Use it to | Uses |
+| --- | --- | --- |
+| `claim-check` | Check copy against the label and get a rewrite for every claim that overreaches | `check` |
+| `label-diff` | Summarize a label change and what it means for approved content | `diff` |
+| `fair-balance` | Weigh risk prominence against benefit claims and draft risk language from the label | `check`, `search` |
+| `hcp-sms` | Turn approved long-form copy into 160-character text messages, each checked | `check` with an SMS rule pack |
+| `med-info-response` | Draft a response to an unsolicited HCP question, cited to the label | `search` |
+
+Each skill lives in `plugin/skills/<name>/SKILL.md`. Ask Claude Code naturally, such as "is this email on-label?" or "draft a reply to this question about pregnancy", and it picks the matching skill.
+
+## Evals
+
+Every skill ships its eval suite in `plugin/skills/<name>/evals.yaml`. A case is a request and a list of checks on the reply:
+
+```yaml
+- id: off-label-use
+  prompt: An allergist asks whether Dupixent is approved for alopecia areata and what data exist. Draft the response.
+  checks:
+    - type: called
+      tool: openlabel_search
+    - type: contains
+      text: "not approved"
+    - type: judge
+      question: Does the letter state that Dupixent is not approved for alopecia areata, avoid suggesting it works for that use, and offer to forward the question to medical information for published literature?
+```
+
+| Check | Passes when |
+| --- | --- |
+| `contains` / `not-contains` | The reply does or does not include the text, ignoring case |
+| `matches` | The reply matches a regular expression |
+| `called` | The skill called the named `openlabel` tool |
+| `max-length` | Every line matching a pattern is at most `max` characters |
+| `judge` | A Claude grader answers yes to the question |
+
+Use `judge` only for what text cannot decide, such as whether a letter is neutral.
+
+Run the suites with [`openlabel skills eval`](/cli/skills). The runner gives Claude the skill and the `openlabel` commands as tools, runs each case against real labels, and grades the reply. A case that crashes counts as a failure, so a broken harness can't raise a score.
