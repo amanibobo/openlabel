@@ -2,7 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
-import { check, claimModel, FDA_CORE, loadPack, retriever, sidecarPath, type ClaimModel, type SavedCheck } from "@openlabel/check";
+import { check, claimModel, FDA_CORE, loadPack, retriever, sidecarPath, type ClaimModel, type Progress, type SavedCheck } from "@openlabel/check";
 import { cite, dailyMed, type DailyMed } from "@openlabel/label";
 import { anthropicLlm, llmFromEnv, type Llm } from "@openlabel/llm";
 import { queryParser, unseen, type ParseQuery, type Search, type UnseenResult } from "@openlabel/unseen";
@@ -60,6 +60,8 @@ Exit codes: 0 all supported, 1 overstated or warning, 2 off-label, unsupported o
 export type Io = {
   stdout: (text: string) => void;
   stderr: (text: string) => void;
+  // A status line that the next one replaces; null clears it. Absent when nobody is watching.
+  status?: (text: string | null) => void;
   color: boolean;
 };
 
@@ -91,6 +93,11 @@ export function pieceText(file: string, raw: string): string {
     .map((line) => line.replace(/\s+/g, " ").trim())
     .filter(Boolean)
     .join("\n");
+}
+
+export function describeProgress(progress: Progress): string {
+  if (progress.phase === "extracting") return "extracting claims";
+  return progress.total === 0 ? "no claims found" : `judging claims ${progress.done}/${progress.total}`;
 }
 
 export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<number> {
@@ -287,9 +294,11 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
   }
 
   try {
+    io.status?.(`fetching the ${values.label} label`);
     const label = await (deps.dailyMed ?? dailyMed()).resolve(values.label, labelVersion);
     const model = deps.model ? deps.model(values.model) : claimModel(llm!);
-    const report = await check({ piece, label, model, pack });
+    const report = await check({ piece, label, model, pack, onProgress: (p) => io.status?.(describeProgress(p)) });
+    io.status?.(null);
     if (values.save) {
       const saved: SavedCheck = { ...report, checkedAt: new Date().toISOString() };
       await writeFile(sidecarPath(file), `${JSON.stringify(saved, null, 2)}\n`);
@@ -297,6 +306,7 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
     io.stdout(values.json ? JSON.stringify(report, null, 2) : formatReport(report, { color: io.color }));
     return report.exitCode;
   } catch (error) {
+    io.status?.(null);
     io.stderr(`openlabel: ${(error as Error).message}`);
     return 69;
   }
