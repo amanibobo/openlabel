@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { check, claimModel, FDA_CORE, loadPack, retriever, sidecarPath, type ClaimModel, type Progress, type SavedCheck } from "@openlabel/check";
 import { cite, dailyMed, type DailyMed } from "@openlabel/label";
-import { llmFromEnv, type Llm } from "@openlabel/llm";
+import { DEFAULT_ANTHROPIC_MODEL, llmFromEnv, type Llm } from "@openlabel/llm";
 import { queryParser, unseen, type ParseQuery, type Search, type UnseenResult } from "@openlabel/unseen";
 import { diffDrugLabel, loadLibrary, watchLibrary } from "@openlabel/watch";
 import { claudeEvaluator, listSkills, RESULTS_FILE, summarize, type SkillResult } from "@openlabel/skills";
@@ -225,7 +225,7 @@ const COMMANDS: Record<string, Command> = {
       return 64;
     }
     const names = positionals[2] ? [positionals[2]] : await listSkills(SKILLS_DIR);
-    const model = values.model ?? "claude-opus-5-5";
+    const model = values.model ?? DEFAULT_ANTHROPIC_MODEL;
     const evaluate =
       deps.evaluate ?? claudeEvaluator({ skillsDir: SKILLS_DIR, model, packs: { "pulse-sms": await readFile(SMS_PACK, "utf8") } });
     const results: SkillResult[] = [];

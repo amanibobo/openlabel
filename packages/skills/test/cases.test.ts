@@ -46,4 +46,13 @@ describe("grade", () => {
     expect(asked).toEqual(["Is it neutral?"]);
     expect(results.every((r) => r.passed)).toBe(true);
   });
+
+  it("fails only the judge check when the judge cannot answer", async () => {
+    const results = await grade(
+      { id: "x", prompt: "p", checks: [{ type: "judge", question: "Is it neutral?" }, { type: "contains", text: "a" }] },
+      { reply: "a", toolCalls: [] },
+      async () => { throw new Error("the model declined: cyber"); },
+    );
+    expect(results.map((r) => [r.passed, r.note])).toEqual([[false, "the model declined: cyber"], [true, undefined]]);
+  });
 });

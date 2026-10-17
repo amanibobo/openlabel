@@ -56,7 +56,11 @@ export async function grade(evalCase: EvalCase, transcript: Transcript, judge: J
             : { check, passed: long.length === 0, ...(long.length && { note: `${long.length} line(s) over ${check.max}` }) };
         }
         case "judge":
-          return { check, passed: await judge(check.question, transcript, evalCase.prompt) };
+          // A grader that can't answer fails its own check and keeps the reply and the other checks.
+          return judge(check.question, transcript, evalCase.prompt).then(
+            (passed) => ({ check, passed }),
+            (error: Error) => ({ check, passed: false, note: error.message }),
+          );
       }
     }),
   );
