@@ -11,6 +11,7 @@
   "skills": [
     "./skills/claim-check",
     "./skills/label-diff",
-    "./skills/fair-balance"
+    "./skills/fair-balance",
+    "./skills/hcp-sms"
   ]
 }
