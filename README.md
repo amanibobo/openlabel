@@ -1,117 +1,147 @@
-# openlabel
+<div align="center">
 
-[![openlabel check reviewing a print ad, built with OpenTUI](docs/media/demo.gif)](https://openlabel-two.vercel.app)
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset=".github/readme-assets/logo-dark.svg"><img src=".github/readme-assets/logo-light.svg" alt="" width="56" align="absmiddle" /></picture> Open Label</h1>
 
 Open tools that keep every message to a doctor true to the FDA label.
 
-- **Check** matches each claim in a piece, including what its imagery implies, to the label sentence that supports it.
-- **Watch** turns a label revision into the list of approved claims it broke.
-- **Unseen** finds no-see and low-see doctors from public data (NPPES, CMS Part D, Open Payments, ClinicalTrials.gov).
-- **Skills** packages medical affairs agent skills, each with its eval suite.
+<p>
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT license" /></a>
+<a href="https://au-2a4a5dc8.mintlify.app"><img src="https://img.shields.io/badge/docs-mintlify-18E299?style=flat-square" alt="Docs" /></a>
+<img src="https://img.shields.io/badge/node-22%2B-5FA04E?style=flat-square" alt="Node 22+" />
+</p>
 
-All four work today. See `docs/plan.md` for how they fit together. Lorvexa, the drug on the site, is fictional, and the site's figures are illustrative.
+<p><a href="https://openlabel-two.vercel.app"><img src="docs/media/demo.gif" alt="openlabel check reviewing a print ad in the terminal: claims fill in with verdicts and label citations while the ad is outlined" width="680" /></a></p>
 
-## Check a piece
+<hr />
 
-Check needs a model key, read from a `.env` file in the working directory or the environment. Claude (`ANTHROPIC_API_KEY`) is the default; OpenAI, OpenRouter, Gemini, Groq and a local Ollama work too with `--provider` and `--model`. See [Models and providers](https://au-2a4a5dc8.mintlify.app/cli/overview#models-and-providers).
+<p>Claim checks, label-change tracking, public-data HCP discovery and agent skills, for the teams that write to physicians and the reviewers who sign off. Every verdict is traced to a sentence in the drug's prescribing information, so a reviewer can check it in seconds.</p>
+
+<p>
+<a href="https://openlabel-two.vercel.app"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/readme-assets/button-site-dark.svg"><img src=".github/readme-assets/button-site-light.svg" alt="Open the site" width="220" height="44" /></picture></a>
+<a href="https://au-2a4a5dc8.mintlify.app"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/readme-assets/button-docs-dark.svg"><img src=".github/readme-assets/button-docs-light.svg" alt="Read the docs" width="220" height="44" /></picture></a>
+</p>
+
+<p><sub>Node 22+ · <a href="https://bun.sh">Bun</a> for the interactive screen · Claude or any OpenAI-compatible model</sub></p>
+
+</div>
+
+## Get started
 
 ```sh
+git clone https://github.com/amanibobo/openlabel
+cd openlabel
 npm install
+echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
 npx openlabel check examples/dupixent-email.html --label dupixent
-npx openlabel check examples/dupixent-sms.txt --label dupixent --rules examples/pulse-sms.yaml
-npx openlabel check examples/dupixent-email.html --label dupixent --json
 ```
 
-Run it with [Bun](https://bun.sh) at a terminal (`bun packages/cli/src/main.ts check …`) to get a full-screen, keyboard-driven view built with OpenTUI instead of plain text; `--plain` turns it off.
-
-It fetches the current label from DailyMed, pulls every claim out of the piece, finds the label sentences each one could rest on, and asks Claude for a verdict that must cite one of them. Rule packs are YAML and run without a model.
-
-Exit codes: 0 when every claim is supported, 1 for overstated claims or warnings, 2 for off-label or unsupported claims or rule violations, 64 for usage errors, 69 when the check could not run.
-
-## Watch a library
-
-Save each approved piece's check next to it, then run `watch` on the folder whenever you like. It diffs the label each piece was checked against with today's label and lists every claim that rested on a sentence that changed.
+Run the same check with <img src=".github/readme-assets/bun.svg" alt="" width="16" height="16" align="texttop" /> Bun to get the full-screen view built with <img src=".github/readme-assets/opentui.svg" alt="" width="16" height="16" align="texttop" /> OpenTUI: claims on the left as they're judged, the label sentences behind each verdict on the right.
 
 ```sh
-npx openlabel check approved/email.html --label dupixent --save
-npx openlabel watch approved
+bun packages/cli/src/main.ts check examples/dupixent-email.html --label dupixent
 ```
 
-`watch` exits 0 when nothing in the folder is affected and 1 when something is, so it can run on a schedule in CI. Inserting a table renumbers every later table; the diff ignores that.
+<details>
+<summary>Use another model provider</summary>
 
-## Find doctors nobody calls on
+Claude is the default. Any provider with an OpenAI-style API works too, with a model id:
 
 ```sh
-npx openlabel unseen "Georgia dermatologists prescribing dupilumab with under \$100 in industry payments"
-npx openlabel unseen --state MS --specialty Endocrinology --drug Semaglutide --drug Tirzepatide --max-payments 1000
+echo "OPENROUTER_API_KEY=sk-or-..." >> .env
+npx openlabel check email.html --label dupixent --provider openrouter --model <model id>
 ```
 
-Unseen ranks a specialty's Medicare Part D prescribers of a drug in one state, keeps those whose Open Payments total for 2023 to 2025 is under the limit, and adds their NPPES practice location and any ClinicalTrials.gov site that carries their name. A question in plain language is turned into that search by Claude; the flags skip the model entirely.
+| Provider | Key |
+| --- | --- |
+| <img src=".github/readme-assets/claude.svg" alt="" width="14" height="14" /> Anthropic (default) | `ANTHROPIC_API_KEY` |
+| OpenAI | `OPENAI_API_KEY` |
+| <img src=".github/readme-assets/openrouter.svg" alt="" width="14" height="14" /> OpenRouter | `OPENROUTER_API_KEY` |
+| <img src=".github/readme-assets/googlegemini.svg" alt="" width="14" height="14" /> Gemini | `GEMINI_API_KEY` |
+| Groq | `GROQ_API_KEY` |
+| <img src=".github/readme-assets/ollama.svg" alt="" width="14" height="14" /> Ollama | none, runs locally |
 
-Part D 2024 is the newest prescribing year CMS has published, so it runs about two years behind. Part D has no diagnoses and no infused drugs billed under Part B, and ClinicalTrials.gov has no NPIs, so trial matches are leads to check.
+See [Models and providers](https://au-2a4a5dc8.mintlify.app/cli/overview#models-and-providers).
 
-## Read a label
+</details>
+
+<details>
+<summary>Install the skills in Claude Code</summary>
 
 ```sh
-npx openlabel search dupixent "conjunctivitis and keratitis"
-npx openlabel diff dupixent --from 53
-```
-
-`search` prints the label sentences that best match a question, with citations. `diff` prints every sentence that changed between two label versions, defaulting to the current one and the one before it.
-
-## Skills
-
-The repo is a Claude Code plugin marketplace with one plugin, `openlabel-skills`:
-
-```sh
+npm link -w openlabel
 claude plugin marketplace add amanibobo/openlabel
 claude plugin install openlabel-skills@openlabel
 ```
 
-| Skill | What it does |
+Then ask Claude Code things like "is this email on-label?" or "draft a reply to this question about pregnancy".
+
+</details>
+
+## How it works
+
+**Check every claim against the label.** `openlabel check` pulls each claim out of an email, text, slide or HTML piece and matches it to the sentence in the FDA prescribing information that supports it. Labels come straight from DailyMed and are cited by section and paragraph, such as §14.1 ¶12. Every verdict (supported, overstated, off-label, unsupported) must cite a sentence the model was shown, and team rule packs in YAML catch missing safety information, superlatives and length limits without a model.
+
+**Know what a label change broke.** Save each approved piece's check with `--save`, and `openlabel watch` diffs the label each one was approved against with today's. It lists every claim that rested on a sentence that changed, with what it said then and says now, and exits 1 so a nightly CI job can open an issue.
+
+**Find the doctors nobody calls on.** `openlabel unseen` ranks a specialty's Medicare Part D prescribers of a drug in one state, keeps those with little or no industry money in Open Payments, and adds practice locations from NPPES and possible trial sites from ClinicalTrials.gov. Ask in plain language or use flags.
+
+```sh
+npx openlabel unseen "Georgia dermatologists prescribing dupilumab with under \$100 in industry payments"
+```
+
+**Give agents the procedures.** Five <img src=".github/readme-assets/claude.svg" alt="" width="16" height="16" align="texttop" /> Claude Code skills for medical affairs and HCP engagement, packaged as one plugin: `claim-check`, `label-diff`, `fair-balance`, `hcp-sms` and `med-info-response`. Each ships with the eval suite that grades it, and `openlabel skills eval` runs them against real labels.
+
+**Read any label.** `openlabel search dupixent "pregnancy"` finds the sentences that answer a question, and `openlabel diff dupixent --from 53` prints everything FDA changed between two versions.
+
+## Data and privacy
+
+Open Label reads public data only: DailyMed labels, CMS Part D (2024, the newest year published), Open Payments (2023 to 2025), NPPES and ClinicalTrials.gov. None of it contains patient data. Check sends your piece and the label sentences it chose to the model provider you configure; nothing else leaves your machine, and Open Label collects no analytics.
+
+Unseen's results are leads to verify, not facts: Part D covers Medicare patients and pharmacy-dispensed drugs only, and trial matches are by name because ClinicalTrials.gov has no NPIs. See [Data sources](https://au-2a4a5dc8.mintlify.app/concepts/data-sources).
+
+## Development
+
+<details>
+<summary>Repository layout</summary>
+
+| Path | What it is |
 | --- | --- |
-| `claim-check` | Checks copy against the label and explains each verdict with a rewrite |
-| `label-diff` | Summarizes a label change and what it means for approved content |
-| `fair-balance` | Weighs risk prominence against benefit claims and drafts risk language from the label |
-| `hcp-sms` | Writes 160-character variants of approved copy and checks each one |
-| `med-info-response` | Drafts a response to an unsolicited HCP question, cited to the label |
+| `packages/label` | Fetches labels from DailyMed and parses them into numbered sections and citable sentences |
+| `packages/check` | Extracts and judges claims, runs rule packs |
+| `packages/watch` | Diffs label versions and finds the saved claims a change touches |
+| `packages/unseen` | Joins CMS Part D, Open Payments, NPPES and ClinicalTrials.gov on NPI |
+| `packages/llm` | One JSON-with-a-schema interface over Claude and OpenAI-compatible providers |
+| `packages/skills` | Runs the skills' eval suites |
+| `packages/cli` | The `openlabel` command, plain and OpenTUI |
+| `plugin` | The Claude Code plugin; `.claude-plugin/marketplace.json` lists it |
+| `apps/web` | The site, built with Next.js |
+| `apps/docs` | The docs, built with <img src=".github/readme-assets/mintlify.svg" alt="" width="14" height="14" /> Mintlify |
+| `tui` | The OpenTUI app that records the demo above |
 
-The skills call the `openlabel` command, so link it first with `npm link -w openlabel`. Each skill ships its eval suite in `evals.yaml`, run with:
-
-```sh
-npx openlabel skills eval                 # every skill
-npx openlabel skills eval hcp-sms --case no-link-given
-```
-
-The runner gives Claude the skill and the openlabel commands as tools, runs each case against real labels, and grades the reply with text checks and, where text cannot decide, a Claude judge.
-
-## Run the site
+</details>
 
 ```sh
-npm run dev
+npm test            # every package
+npm run typecheck
+npm run dev         # the site
+npm run docs        # the docs
 ```
 
-## The terminal demo
-
-The hero video is a real [OpenTUI](https://opentui.com) app in `tui/`, recorded through xterm.js.
+<details>
+<summary>Re-record the terminal demo</summary>
 
 ```sh
 cd tui
 bun install
 bun run demo     # play it in your terminal
 bun run record   # regenerate apps/web/public/demo/check.{mp4,webm} and the poster
-bun run gif      # regenerate docs/media/demo.gif for this README from the mp4
+bun run gif      # regenerate docs/media/demo.gif from the mp4
 ```
 
-## Layout
+</details>
 
-- `packages/label` fetches labels from DailyMed and parses them into numbered sections and citable sentences.
-- `packages/check` extracts and judges claims and runs rule packs.
-- `packages/watch` diffs label versions and finds the saved claims a change touches.
-- `packages/unseen` joins CMS Part D, Open Payments, NPPES and ClinicalTrials.gov on NPI.
-- `packages/skills` runs the skills' eval suites.
-- `packages/cli` is the `openlabel` command.
-- `plugin` is the Claude Code plugin; `.claude-plugin/marketplace.json` lists it.
-- `apps/docs` is the documentation, built with [Mintlify](https://mintlify.com). Preview it with `npm run docs`.
-- `apps/web` is the site. `app/content.ts` holds its copy and example data, and `app/geo.ts` projects county maps from `us-atlas` at build time.
-- `apps/web/assets-src/lorvexa-ad.html` is the source of `apps/web/public/images/lorvexa-ad.png`. The photo is by [Erik Allen on Pexels](https://www.pexels.com/photo/2589840/).
+Lorvexa, the drug in the demo and on the site, is fictional. The ad photo is by [Erik Allen on Pexels](https://www.pexels.com/photo/2589840/).
+
+## License
+
+[MIT](LICENSE)
