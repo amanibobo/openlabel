@@ -10,7 +10,7 @@ const doctors = [
 
 function fakeApis() {
   const calls: string[] = [];
-  const fetch = async (url: string) => {
+  const fetch = async (url: string, init?: RequestInit) => {
     calls.push(url);
     const u = new URL(url);
     if (u.host === "data.cms.gov") {
@@ -22,13 +22,12 @@ function fakeApis() {
       );
     }
     if (u.host === "openpaymentsdata.cms.gov") {
-      const doctor = doctors.find((d) => d.npi === u.searchParams.get("conditions[0][value]"))!;
+      const asked: string[] = JSON.parse(String(init?.body)).conditions[0].value;
       const paidIn2024 = url.includes("e6b17c6a");
-      return Response.json(
-        paidIn2024 && doctor.payments !== "0"
-          ? { count: 1, results: [{ total_amount_of_payment_usdollars: doctor.payments, applicable_manufacturer_or_applicable_gpo_making_payment_name: "Acme" }] }
-          : { count: 0, results: [] },
-      );
+      const results = doctors
+        .filter((d) => asked.includes(d.npi) && paidIn2024 && d.payments !== "0")
+        .map((d) => ({ covered_recipient_npi: d.npi, applicable_manufacturer_or_applicable_gpo_making_payment_name: "Acme", total: d.payments }));
+      return Response.json({ results });
     }
     if (u.host === "npiregistry.cms.hhs.gov") {
       return Response.json({
@@ -52,17 +51,14 @@ describe("unseen", () => {
     expect(result).toMatchObject({ claimsYear: 2024, paymentYears: [2023, 2024, 2025] });
   });
 
-  it("stops looking up payments once it has enough candidates", async () => {
+  it("looks up payments for the whole batch in one request per year", async () => {
     const { fetch, calls } = fakeApis();
     const result = await unseen(
       { state: "GA", specialty: "Dermatology", drugs: ["Dupilumab"], maxPayments: null, limit: 1 },
       { fetch },
     );
-    const paymentLookups = new Set(
-      calls.filter((u) => u.includes("openpaymentsdata")).map((u) => new URL(u).searchParams.get("conditions[0][value]")),
-    );
-    expect(result.scanned).toBe(2);
-    expect(paymentLookups).toEqual(new Set(["1000000001", "1000000002"]));
+    expect(calls.filter((u) => u.includes("openpaymentsdata"))).toHaveLength(3);
+    expect(result.scanned).toBe(4);
     expect(result.candidates.map((c) => c.last)).toEqual(["Paid"]);
   });
 });
