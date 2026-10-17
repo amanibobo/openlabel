@@ -1,0 +1,69 @@
+---
+title: "Rule packs"
+description: "Team rules that run on every piece without a model."
+---
+
+Rule packs are YAML files your team owns, versions and reviews like code. They run after claims are judged, with no model involved.
+
+```yaml examples/pulse-sms.yaml
+pack: pulse-sms
+extends: fda-core
+rules:
+  - id: sms.isi-link
+    type: require
+    pattern: "https?://\\S+"
+    message: Every text needs a link to current safety information.
+  - id: sms.length
+    type: max-length
+    max: 160
+```
+
+```sh
+openlabel check sms.txt --label dupixent --rules examples/pulse-sms.yaml
+```
+
+## fda-core
+
+Every check runs `fda-core` unless you pass a pack, and a pack that says `extends: fda-core` runs its rules first.
+
+| Rule | Severity | Fires when |
+| --- | --- | --- |
+| `isi.present` | violation | The piece never mentions Important Safety Information |
+| `claims.superlatives` | warning | The piece says best, safest, fastest, only, cure, cures, guaranteed, miracle or breakthrough, unless the claim around the word was judged supported |
+
+## Rule types
+
+<AccordionGroup>
+  <Accordion title="require">
+    Fires when the piece does not match `pattern`, a case-insensitive regular expression. Defaults to `violation`.
+
+    ```yaml
+    - id: isi.link
+      type: require
+      pattern: "important safety information"
+      message: No Important Safety Information on the piece.
+    ```
+  </Accordion>
+  <Accordion title="forbid">
+    Fires once for every whole-word match of any of `words`. With `unless-supported: true`, a match inside a claim judged supported is allowed. Defaults to `warning`.
+
+    ```yaml
+    - id: claims.speed
+      type: forbid
+      words: [fast, quickly, rapid]
+      message: Speed claims need a time-to-response result in the label.
+      unless-supported: true
+    ```
+  </Accordion>
+  <Accordion title="max-length">
+    Fires when the piece is longer than `max` characters. Defaults to `violation`.
+
+    ```yaml
+    - id: banner.length
+      type: max-length
+      max: 90
+    ```
+  </Accordion>
+</AccordionGroup>
+
+Any rule can set `severity: violation` or `severity: warning`. Violations exit 2 and warnings exit 1; see [Verdicts and exit codes](/concepts/verdicts). A pack with an unknown rule type is rejected before anything runs.

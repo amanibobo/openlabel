@@ -1,0 +1,56 @@
+---
+title: "Unseen"
+description: "Find the prescribers nobody calls on, from public data alone."
+---
+
+Unseen answers questions like "Georgia dermatologists who prescribe dupilumab and take almost no industry money". It joins four public datasets on the National Provider Identifier (NPI) and returns a ranked list.
+
+```sh
+openlabel unseen "Endocrinologists in Mississippi prescribing GLP-1s with under $1,000 in industry payments"
+openlabel unseen --state MS --specialty Endocrinology --drug Semaglutide --drug Tirzepatide --max-payments 1000
+```
+
+```text
+Endocrinology in MS prescribing Semaglutide, Tirzepatide, at most $1,000 in industry payments 2023–2025
+
+  NPI          Name                                  Location            Claims 2024   Payments 2023–2025   Possible trials
+  1417339268   Aboorva Kambiliampatti Sudhakar, MD   Hattiesburg, MS             431                 $390   none
+  1871694646   Daniel Mccall, MD                     Hattiesburg, MS             284                 $588   none
+  ...
+  5 shown from 35 top prescribers checked.
+```
+
+## How it works
+
+<Steps>
+  <Step title="Prescribers">
+    Medicare Part D prescribing (2024) for the drugs, filtered to the state and specialty. A drug's brand forms, such as Dupixent Pen and Dupixent Syringe, are summed per prescriber, then prescribers are ranked by claims.
+  </Step>
+  <Step title="Industry payments">
+    Open Payments general payments for 2023, 2024 and 2025, per prescriber. Unseen walks down the ranking in batches and stops once it has enough prescribers under the payment limit.
+  </Step>
+  <Step title="Practice location">
+    The NPPES registry supplies the practice address and credential.
+  </Step>
+  <Step title="Possible trial sites">
+    ClinicalTrials.gov sites in the prescriber's state that carry their name, as the site name or a site contact, in studies that started in 2021 or later.
+  </Step>
+</Steps>
+
+## Questions or flags
+
+A question is turned into a search by Claude. Part D records drugs, not diagnoses, so "psoriasis prescribing" becomes the drugs that treat psoriasis. "No industry contact" becomes a payment limit of $0, and "low contact" $100 unless you give a number.
+
+Flags skip the model. `--state`, `--specialty` and at least one `--drug` are required together; `--max-payments` and `--limit` are optional. A flag also overrides what a question set, so `--max-payments 500` with a question keeps the question's drugs and changes only the limit.
+
+## What the data can't tell you
+
+<Warning>
+Read the output as leads, not facts.
+</Warning>
+
+- Part D 2024 is the newest year CMS has published, so prescribing runs about two years behind.
+- Part D covers drugs dispensed at pharmacies. Infused drugs billed under Part B, such as most oncology infusions, never appear, and Unseen lists any drug it found no rows for.
+- Part D only covers Medicare patients. A prescriber with a younger patient population will rank lower than their real volume.
+- ClinicalTrials.gov has no NPIs. A trial match means the name appears on a site in the prescriber's state, and needs checking.
+- Manufacturers do not have to report payments below a small yearly threshold, so $0 means "nothing reported", not "no contact".

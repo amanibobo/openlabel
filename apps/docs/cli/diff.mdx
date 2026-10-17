@@ -1,0 +1,30 @@
+---
+title: "openlabel diff"
+description: "Print every sentence that changed between two label versions."
+---
+
+```sh
+openlabel diff <drug> [--from <version>] [--to <version>]
+```
+
+| Option | Description |
+| --- | --- |
+| `--from <n>` | The older version. Defaults to the version before `--to` |
+| `--to <n>` | The newer version. Defaults to the current one |
+| `--json` | Print the diff as JSON |
+
+```sh
+openlabel diff dupixent --from 53
+```
+
+```text
+Dupixent (dupilumab) · v53 (2026-02-23) to v60 (2026-04-22)
+
+  §1.7 Chronic Spontaneous Urticaria · indication, changed
+    - DUPIXENT is indicated for … patients aged 12 years and older with chronic spontaneous urticaria (CSU) …
+    + DUPIXENT is indicated for … patients aged 2 years and older with chronic spontaneous urticaria (CSU) …
+```
+
+Each section is tagged with a category (boxed warning, indication, dosing, contraindication, warning, adverse reactions, clinical studies, other) and a status (added, removed, changed). Table and figure renumbering is ignored. A label can publish versions with no change to the prescribing information; then `diff` says so.
+
+Version numbers come from the label's DailyMed history, which skips numbers.

@@ -1,0 +1,59 @@
+---
+title: "openlabel check"
+description: "Judge every claim in a piece against the drug's label."
+---
+
+```sh
+openlabel check <file> --label <drug or set id> [options]
+```
+
+`<file>` is plain text, Markdown or HTML. HTML is reduced to its visible text, one line per block element, with scripts and styles dropped.
+
+| Option | Description |
+| --- | --- |
+| `--label <drug>` | Required. A brand name such as `dupixent`, or a DailyMed set id |
+| `--label-version <n>` | Judge against a past version of the label instead of the current one |
+| `--rules <file>` | A YAML [rule pack](/concepts/rule-packs). Defaults to `fda-core` |
+| `--save` | Also write the report to `<file>.check.json` for [`watch`](/cli/watch) |
+| `--json` | Print the report as JSON |
+| `--model <id>` | Claude model. Defaults to `claude-opus-5-5` |
+
+```sh
+openlabel check examples/dupixent-sms.txt --label dupixent --rules examples/pulse-sms.yaml
+```
+
+## JSON output
+
+```json
+{
+  "piece": "Dr. Patel, DUPIXENT clears eczema fast and gets patients back to the life they love. …",
+  "label": { "setId": "595f437d-2729-40bb-9c62-c8ece1f82780", "version": 60, "title": "Dupixent (dupilumab)" },
+  "claims": [
+    {
+      "id": "c1",
+      "text": "DUPIXENT clears eczema fast",
+      "kind": "efficacy",
+      "start": 11,
+      "end": 38,
+      "verdict": "overstated",
+      "evidence": ["14.1:2.2", "14.1:35.2", "14.1:76.1"],
+      "evidenceText": [
+        {
+          "id": "14.1:2.2",
+          "section": "14.1",
+          "paragraph": 2,
+          "kind": "prose",
+          "text": "Disease severity was defined by an Investigator's Global Assessment (IGA) score ≥3 …"
+        }
+      ],
+      "reason": "The excerpts describe 16-week trials measuring the proportion of subjects reaching scale thresholds such as EASI-75/EASI-90 or IGA scores, which supports only partial improvement in some patients, not that DUPIXENT clears eczema or does so quickly."
+    }
+  ],
+  "findings": [
+    { "rule": "isi.present", "severity": "violation", "message": "No Important Safety Information on the piece." }
+  ],
+  "exitCode": 2
+}
+```
+
+This is `examples/dupixent-sms.txt`, trimmed to one claim. `start` and `end` are character offsets into the piece, so an editor can highlight each claim. Exit codes are listed in [Verdicts and exit codes](/concepts/verdicts).

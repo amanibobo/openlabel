@@ -1,0 +1,30 @@
+---
+title: "Labels and citations"
+description: "How a DailyMed label becomes citable sentences."
+---
+
+Every verdict, diff and search result points at a sentence of the label. This page covers where that sentence comes from and what its citation means.
+
+## Where labels come from
+
+Labels are FDA Structured Product Labeling (SPL) documents from [DailyMed](https://dailymed.nlm.nih.gov). Open Label fetches them by brand name or by set id, the identifier a label keeps across every revision.
+
+A brand name can match several labels: the manufacturer's, repackagers' copies, and related products such as KEYTRUDA QLEX. Open Label picks the title that starts with exactly the name you gave, then the label with the most versions, which is almost always the manufacturer's.
+
+The current version comes from DailyMed's XML endpoint. Past versions come from its archive, which DailyMed only serves zipped. Every version is cached at `~/.cache/openlabel/labels/<set id>/<version>.xml`.
+
+## From XML to sentences
+
+- **Sections** keep their numbers: "14.1 Atopic Dermatitis" becomes section `14.1`. The boxed warning becomes `boxed` and the recent major changes `recent-changes`.
+- **Untitled sub-sections**, which SPL uses heavily for layout, are folded into their parent so a sentence is cited by the numbered section a reader can find.
+- **Paragraphs** are numbered within their section. List items count as paragraphs.
+- **Table rows** become sentences with cells joined by `|`, and each row carries its table's caption, so "IGA 0 or 1 | 38% | 10%" still says which trial and which week it reports.
+- **Left out:** carton panels, patient medication guides and instructions for use. They are not the prescribing information claims are judged against.
+
+Sentence splitting knows the abbreviations labels use ("e.g.", "vs.", "U.S.", "approx."), keeps decimals together, and keeps bracketed cross-references such as "[see Warnings and Precautions (5.1)]" attached to their sentence.
+
+## Citations
+
+A citation reads `§14.1 ¶12`: section 14.1, paragraph 12. Internally every sentence has an id like `14.1:12.1`, adding its position within the paragraph, and that id is what verdicts and saved checks store.
+
+Paragraph numbers can shift between label versions. That is why [Watch](/tools/watch) matches a saved claim's evidence by the sentence's text rather than its id.

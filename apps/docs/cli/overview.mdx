@@ -1,0 +1,33 @@
+---
+title: "Commands"
+description: "Every openlabel command, what it needs, and how it exits."
+---
+
+| Command | Does | Needs an API key |
+| --- | --- | --- |
+| [`check`](/cli/check) | Judges a piece's claims against its label | Yes |
+| [`watch`](/cli/watch) | Lists saved claims a label change touches | No |
+| [`unseen`](/cli/unseen) | Finds prescribers with little industry contact | Only for a question |
+| [`search`](/cli/search) | Prints the label sentences matching a question | No |
+| [`diff`](/cli/diff) | Prints what changed between two label versions | No |
+| [`skills eval`](/cli/skills) | Runs the skills' eval suites | Yes |
+
+Every command takes `--json` to print machine-readable output instead of text, and `-h` or `--help`.
+
+Color is on when output goes to a terminal. Set `NO_COLOR` to turn it off.
+
+## API key
+
+Commands that call Claude read `ANTHROPIC_API_KEY`. A `.env` file in the directory you run from is loaded automatically. `--model <id>` picks a different Claude model; the default is `claude-opus-5-5`.
+
+## Exit codes
+
+| Code | Meaning |
+| --- | --- |
+| 0 | Success with nothing to report |
+| 1 | Something needs attention: an overstated claim, an affected piece, a failed eval case |
+| 2 | `check` only: an off-label or unsupported claim, or a rule violation |
+| 64 | Usage error |
+| 69 | Could not run: network or API failure |
+
+See [Verdicts and exit codes](/concepts/verdicts) for exactly when `check` returns each.
