@@ -1,0 +1,40 @@
+cases:
+  - id: benefits-only
+    prompt: |
+      Is this Dupixent print ad fairly balanced?
+
+      LIVE CLEAR.
+      38% of adults reached clear or almost-clear skin at Week 16.
+      One injection every two weeks.
+      Ask about DUPIXENT.
+    checks:
+      - type: called
+        tool: openlabel_search
+      - type: matches
+        pattern: "conjunctivitis|keratitis|hypersensitivity"
+      - type: judge
+        question: Does the reply find the ad unbalanced or missing safety information, and propose risk language taken from the label with citations?
+
+  - id: minimizing-language
+    prompt: |
+      Fair balance check for this Dupixent email paragraph:
+
+      DUPIXENT helped adults reach clearer skin at Week 16. It is well tolerated, and side effects are mild and rare.
+      Important Safety Information: DUPIXENT can cause allergic reactions.
+    checks:
+      - type: called
+        tool: openlabel_search
+      - type: judge
+        question: Does the reply flag "well tolerated" or "mild and rare" as minimizing language the label does not support?
+
+  - id: no-boxed-warning
+    prompt: |
+      Our reviewer says this Dupixent piece needs a boxed warning added. Is that right?
+
+      DUPIXENT is indicated for adults with moderate-to-severe atopic dermatitis not adequately controlled with topical therapies.
+      Important Safety Information: Hypersensitivity reactions, including anaphylaxis, have been reported. Conjunctivitis and keratitis occurred more often with DUPIXENT.
+    checks:
+      - type: called
+        tool: openlabel_search
+      - type: judge
+        question: Does the reply say the Dupixent label has no boxed warning, so none is required, without inventing one?

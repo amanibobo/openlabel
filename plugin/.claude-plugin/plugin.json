@@ -1,0 +1,18 @@
+{
+  "name": "openlabel-skills",
+  "version": "0.1.0",
+  "description": "Skills for writing to physicians and reviewing what gets written, each grounded in the FDA label through the openlabel CLI.",
+  "author": {
+    "name": "Amani Bobo",
+    "url": "https://github.com/amanibobo"
+  },
+  "repository": "https://github.com/amanibobo/openlabel",
+  "license": "MIT",
+  "skills": [
+    "./skills/claim-check",
+    "./skills/label-diff",
+    "./skills/fair-balance",
+    "./skills/hcp-sms",
+    "./skills/med-info-response"
+  ]
+}

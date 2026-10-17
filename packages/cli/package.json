@@ -10,8 +10,10 @@
     "typecheck": "tsc -p ."
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "*",
     "@openlabel/check": "*",
     "@openlabel/label": "*",
+    "@openlabel/skills": "*",
     "@openlabel/unseen": "*",
     "@openlabel/watch": "*",
     "tsx": "^4.23.15"

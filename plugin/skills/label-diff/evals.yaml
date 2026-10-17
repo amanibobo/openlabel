@@ -1,0 +1,41 @@
+cases:
+  - id: indication-widened
+    prompt: What changed in the Dupixent label between version 53 and version 58?
+    checks:
+      - type: called
+        tool: openlabel_diff
+      - type: contains
+        text: "§1.7"
+      - type: matches
+        pattern: "\\b2 years\\b"
+      - type: contains
+        text: "blind"
+
+  - id: approved-piece-outdated
+    prompt: |
+      We have an approved Dupixent email that says "DUPIXENT is approved for chronic spontaneous urticaria in patients 12 and older." Does the label update from version 53 to 58 affect it?
+    checks:
+      - type: called
+        tool: openlabel_diff
+      - type: contains
+        text: "§1.7"
+      - type: judge
+        question: Does the reply say the email's claim is now out of date because the indication was extended to patients aged 2 and older?
+
+  - id: no-change
+    prompt: Did anything change in the Dupixent label between version 58 and version 60?
+    checks:
+      - type: called
+        tool: openlabel_diff
+      - type: judge
+        question: Does the reply say there were no changes to the prescribing information between those two versions, without inventing any change?
+
+  - id: warning-change
+    prompt: Did any warning change in the Dupixent label between version 53 and 58? Our ISI may need updating.
+    checks:
+      - type: called
+        tool: openlabel_diff
+      - type: contains
+        text: "§5.2"
+      - type: judge
+        question: Does the reply say the safety information on approved pieces should be updated for the change to the eye warning?
