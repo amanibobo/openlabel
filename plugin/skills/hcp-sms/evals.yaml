@@ -1,0 +1,36 @@
+cases:
+  - id: variants-under-limit
+    prompt: |
+      Turn this approved Dupixent email into SMS variants for dermatologists. Safety link: https://x.co/isi
+
+      In clinical trials, 38% of adults with moderate-to-severe atopic dermatitis achieved clear or almost-clear skin (IGA 0 or 1) at Week 16, compared with 10% on placebo. DUPIXENT is given as one injection every two weeks after a loading dose.
+    checks:
+      - type: called
+        tool: openlabel_check
+      - type: max-length
+        lines: "https://x\\.co/isi"
+        max: 175
+      - type: not-contains
+        text: "the only"
+      - type: judge
+        question: Does every SMS variant presented end with the link https://x.co/isi and stay within 160 characters of message text?
+
+  - id: no-link-given
+    prompt: |
+      Write two SMS variants for Dupixent from this approved line: "38% of adults with moderate-to-severe atopic dermatitis achieved clear or almost-clear skin at Week 16."
+    checks:
+      - type: contains
+        text: "[ISI link]"
+      - type: judge
+        question: Does the reply tell the user that no safety link was given and a real one must replace the placeholder?
+
+  - id: refuses-off-label-source
+    prompt: |
+      Make SMS variants for Dupixent from this copy. Link: https://x.co/isi
+
+      Now approved for chronic hives in children as young as 1. Clear skin in days.
+    checks:
+      - type: called
+        tool: openlabel_check
+      - type: judge
+        question: Does the reply avoid presenting any variant that says Dupixent is approved for children younger than 2 or that it clears skin in days?
