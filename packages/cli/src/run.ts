@@ -1,11 +1,15 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { extname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { check, claudeModel, FDA_CORE, loadPack, retriever, sidecarPath, type ClaimModel, type SavedCheck } from "@openlabel/check";
 import { cite, dailyMed, type DailyMed } from "@openlabel/label";
 import { claudeQueryParser, unseen, type ParseQuery, type Search, type UnseenResult } from "@openlabel/unseen";
 import { diffLabels, loadLibrary, watchLibrary } from "@openlabel/watch";
+import { claudeJudge, evaluateSkill, listSkills, openLabelTools, runSkill, type SkillResult } from "@openlabel/skills";
+import Anthropic from "@anthropic-ai/sdk";
 import { formatDiff } from "./format-diff.ts";
+import { formatSkills } from "./format-skills.ts";
 import { formatReport } from "./format.ts";
 import { formatUnseen } from "./format-unseen.ts";
 import { formatWatch } from "./format-watch.ts";
@@ -15,10 +19,14 @@ export const USAGE = `Usage:
   openlabel watch [folder]
   openlabel diff <drug> [--from <version>] [--to <version>]
   openlabel search <drug> "<question>" [--limit n]
+  openlabel skills eval [skill] [--case <id>]
   openlabel unseen "<question>"   or   openlabel unseen --state GA --specialty Dermatology --drug Dupilumab
 
 unseen ranks a specialty's Medicare Part D prescribers of a drug in a state and keeps the ones
 with little or no industry money (Open Payments), with practice locations and possible trial sites.
+
+skills eval runs each skill's eval suite against Claude with the openlabel tools and prints
+its pass rate; it exits 1 if any case fails.
 
 search prints the label sentences that best match a question, with their citations.
 
@@ -50,7 +58,11 @@ export type Io = {
   color: boolean;
 };
 
+export const SKILLS_DIR = fileURLToPath(new URL("../../../plugin/skills", import.meta.url));
+const SMS_PACK = fileURLToPath(new URL("../../../examples/pulse-sms.yaml", import.meta.url));
+
 export type Deps = {
+  evaluate?: (skill: string, only: string | undefined) => Promise<SkillResult>;
   dailyMed?: DailyMed;
   model?: (id: string | undefined) => ClaimModel;
   parseQuery?: ParseQuery;
@@ -96,6 +108,7 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
         limit: { type: "string" },
         from: { type: "string" },
         to: { type: "string" },
+        case: { type: "string" },
       },
     });
   } catch (error) {
@@ -115,6 +128,40 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
       const result = await watchLibrary(await loadLibrary(folder), deps.dailyMed ?? dailyMed());
       io.stdout(values.json ? JSON.stringify(result, null, 2) : formatWatch(result, { color: io.color, cwd: folder }));
       return result.pieces.some((p) => p.impacts.length) ? 1 : 0;
+    } catch (error) {
+      io.stderr(`openlabel: ${(error as Error).message}`);
+      return 69;
+    }
+  }
+  if (command === "skills") {
+    if (file !== "eval") {
+      io.stderr(USAGE);
+      return 64;
+    }
+    try {
+      const names = positionals[2] ? [positionals[2]] : await listSkills(SKILLS_DIR);
+      const evaluate =
+        deps.evaluate ??
+        (await (async () => {
+          const client = new Anthropic();
+          const id = values.model ?? "claude-opus-5-5";
+          const tools = openLabelTools({
+            dailyMed: dailyMed(),
+            model: claudeModel({ client, model: id }),
+            packs: { "pulse-sms": await readFile(SMS_PACK, "utf8") },
+          });
+          const judge = claudeJudge(client, id);
+          return (skill: string, only: string | undefined) =>
+            evaluateSkill(SKILLS_DIR, skill, {
+              judge,
+              ...(only && { only }),
+              run: (skillText, prompt) => runSkill({ client, model: id, skill: skillText, prompt, tools }),
+            });
+        })());
+      const results: SkillResult[] = [];
+      for (const name of names) results.push(await evaluate(name, values.case));
+      io.stdout(values.json ? JSON.stringify(results, null, 2) : formatSkills(results, { color: io.color }));
+      return results.every((r) => r.passed === r.total) ? 0 : 1;
     } catch (error) {
       io.stderr(`openlabel: ${(error as Error).message}`);
       return 69;

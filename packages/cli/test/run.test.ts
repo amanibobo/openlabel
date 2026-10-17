@@ -115,6 +115,31 @@ describe("run watch", () => {
   });
 });
 
+describe("run skills eval", () => {
+  it("evaluates every skill in the plugin and exits 1 when any case fails", async () => {
+    const seen: string[] = [];
+    const t = io();
+    const code = await run(["skills", "eval"], t.io, {
+      evaluate: async (skill) => {
+        seen.push(skill);
+        return { skill, passed: skill === "hcp-sms" ? 0 : 1, total: 1, cases: [] };
+      },
+    });
+    expect(seen).toEqual(["claim-check", "fair-balance", "hcp-sms", "label-diff", "med-info-response"]);
+    expect(code).toBe(1);
+    expect(t.out.join("")).toContain("4 of 5 cases passed");
+  });
+
+  it("runs one skill and one case when asked", async () => {
+    const calls: [string, string | undefined][] = [];
+    const code = await run(["skills", "eval", "label-diff", "--case", "no-change"], io().io, {
+      evaluate: async (skill, only) => (calls.push([skill, only]), { skill, passed: 1, total: 1, cases: [] }),
+    });
+    expect(calls).toEqual([["label-diff", "no-change"]]);
+    expect(code).toBe(0);
+  });
+});
+
 describe("run search", () => {
   it("prints matching label sentences with citations", async () => {
     const t = io();
