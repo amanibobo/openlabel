@@ -26,24 +26,34 @@ openlabel check examples/dupixent-sms.txt --label dupixent --rules examples/puls
 
 ```json
 {
-  "piece": "…",
-  "label": { "setId": "595f437d-…", "version": 60, "title": "Dupixent (dupilumab)" },
+  "piece": "Dr. Patel, DUPIXENT clears eczema fast and gets patients back to the life they love. …",
+  "label": { "setId": "595f437d-2729-40bb-9c62-c8ece1f82780", "version": 60, "title": "Dupixent (dupilumab)" },
   "claims": [
     {
-      "id": "c2",
-      "text": "38% of adults achieved clear or almost-clear skin (IGA 0 or 1) at Week 16, compared with 10% on placebo",
+      "id": "c1",
+      "text": "DUPIXENT clears eczema fast",
       "kind": "efficacy",
-      "start": 112,
-      "end": 216,
-      "verdict": "supported",
-      "evidence": ["14.1:12.1"],
-      "evidenceText": [{ "id": "14.1:12.1", "section": "14.1", "paragraph": 12, "kind": "table-row", "text": "IGA 0 or 1, | 38% | 10% | …", "context": "Table 18: …" }],
-      "reason": "Table 18 reports IGA 0 or 1 at Week 16 in 38% …"
+      "start": 11,
+      "end": 38,
+      "verdict": "overstated",
+      "evidence": ["14.1:2.2", "14.1:35.2", "14.1:76.1"],
+      "evidenceText": [
+        {
+          "id": "14.1:2.2",
+          "section": "14.1",
+          "paragraph": 2,
+          "kind": "prose",
+          "text": "Disease severity was defined by an Investigator's Global Assessment (IGA) score ≥3 …"
+        }
+      ],
+      "reason": "The excerpts describe 16-week trials measuring the proportion of subjects reaching scale thresholds such as EASI-75/EASI-90 or IGA scores, which supports only partial improvement in some patients, not that DUPIXENT clears eczema or does so quickly."
     }
   ],
-  "findings": [{ "rule": "isi.present", "severity": "violation", "message": "No Important Safety Information on the piece." }],
+  "findings": [
+    { "rule": "isi.present", "severity": "violation", "message": "No Important Safety Information on the piece." }
+  ],
   "exitCode": 2
 }
 ```
 
-`start` and `end` are character offsets into the piece, so an editor can highlight each claim. Exit codes are listed in [Verdicts and exit codes](/concepts/verdicts).
+This is `examples/dupixent-sms.txt`, trimmed to one claim. `start` and `end` are character offsets into the piece, so an editor can highlight each claim. Exit codes are listed in [Verdicts and exit codes](/concepts/verdicts).
