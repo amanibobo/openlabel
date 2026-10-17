@@ -1,0 +1,27 @@
+---
+title: "Open Label"
+description: "Open tools that keep every message to a doctor true to the FDA label."
+---
+
+Open Label is a command-line tool and a Claude Code plugin for the people who write to physicians and the reviewers who sign off on it. Everything it says about a drug is traced to a sentence in that drug's FDA prescribing information, fetched from DailyMed and cited by section and paragraph.
+
+<CardGroup cols={2}>
+  <Card title="Check" icon="list-check" href="/tools/check">
+    Matches every claim in a piece to the label sentence that supports it, and says which ones overreach.
+  </Card>
+  <Card title="Watch" icon="eye" href="/tools/watch">
+    Turns a label revision into the list of approved claims it made wrong.
+  </Card>
+  <Card title="Unseen" icon="user-doctor" href="/tools/unseen">
+    Finds the prescribers nobody calls on, from Medicare Part D, Open Payments, NPPES and ClinicalTrials.gov.
+  </Card>
+  <Card title="Skills" icon="wand-magic-sparkles" href="/tools/skills">
+    Five agent skills for medical affairs and HCP engagement, each with the eval suite that grades it.
+  </Card>
+</CardGroup>
+
+## What it is not
+
+Open Label drafts and flags. A person signs off. It does not approve content, it does not replace your MLR process, and every verdict links to the evidence a reviewer needs to overrule it.
+
+It reads the label and public data only. Claims that rest on published literature, data on file or real-world evidence are outside what it can check, and it says so rather than guessing.
