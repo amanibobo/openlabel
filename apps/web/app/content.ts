@@ -232,9 +232,9 @@ export const unseenQueries: readonly UnseenQuery[] = [
 export type Skill = { name: string; summary: string; cases: number; pass: number };
 
 export const skills: readonly Skill[] = [
-  { name: "med-info-response", summary: "Drafts the standard response letter to an unsolicited HCP question.", cases: 48, pass: 46 },
-  { name: "claim-check", summary: "Runs Check from inside an agent and explains each verdict.", cases: 120, pass: 113 },
-  { name: "fair-balance", summary: "Weighs risk prominence against benefit claims in a draft.", cases: 64, pass: 61 },
-  { name: "label-diff", summary: "Summarizes what changed between two label revisions.", cases: 40, pass: 40 },
-  { name: "hcp-sms", summary: "Writes 160-character variants that keep their safety link.", cases: 80, pass: 74 },
+  { name: "claim-check", summary: "Checks copy against the label and rewrites every claim that overreaches.", cases: 4, pass: 4 },
+  { name: "label-diff", summary: "Explains a label change and what it means for approved content.", cases: 4, pass: 4 },
+  { name: "fair-balance", summary: "Weighs risk prominence against benefit claims and drafts risk language.", cases: 3, pass: 3 },
+  { name: "hcp-sms", summary: "Writes 160-character variants of approved copy and checks each one.", cases: 3, pass: 3 },
+  { name: "med-info-response", summary: "Drafts a cited response to an unsolicited HCP question.", cases: 4, pass: 4 },
 ];
