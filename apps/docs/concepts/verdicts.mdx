@@ -1,0 +1,34 @@
+---
+title: "Verdicts and exit codes"
+description: "What each verdict means and how a check turns into an exit code."
+---
+
+## Verdicts
+
+| Verdict | Meaning |
+| --- | --- |
+| `supported` | The cited label sentences state the claim, and the claim is no stronger than they are. |
+| `overstated` | The label supports only a weaker version: a smaller effect, a narrower population, or a scale score presented as a life outcome. |
+| `off-label` | The claim describes a use, population or dose the label does not include. |
+| `unsupported` | Nothing in the label addresses it. |
+
+Every verdict except `unsupported` must cite at least one label sentence that was shown to the model. Two guards enforce that in code:
+
+- A citation to a sentence the model was not shown is dropped.
+- A `supported` verdict left with no valid citation becomes `unsupported`.
+
+`unsupported` means "not in the label". A claim backed by a publication may be true and still come back unsupported, because Check only reads the label.
+
+## Exit codes
+
+Every command exits with a code a script or CI job can act on.
+
+| Code | `check` | `watch` | `skills eval` |
+| --- | --- | --- | --- |
+| 0 | Every claim supported, no rule fired | Nothing affected | Every case passed |
+| 1 | An overstated claim or a warning | Something affected | A case failed |
+| 2 | An off-label or unsupported claim, or a violation | | |
+| 64 | Usage error: missing argument, bad flag, unreadable file | | |
+| 69 | Could not run: network or API failure | | |
+
+The worst result wins: a piece with one overstated claim and one off-label claim exits 2.
