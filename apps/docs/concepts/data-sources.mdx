@@ -1,0 +1,24 @@
+---
+title: "Data sources"
+description: "Every dataset Open Label reads, how current it is, and what it leaves out."
+---
+
+All of it is public, and none of it needs an account.
+
+| Source | Used by | Current to | Notes |
+| --- | --- | --- | --- |
+| [DailyMed](https://dailymed.nlm.nih.gov) SPL | Check, Watch, search, diff, Skills | Live | Current labels by XML, past versions from the zipped archive |
+| [Medicare Part D Prescribers by Provider and Drug](https://data.cms.gov/provider-summary-by-type-of-service/medicare-part-d-prescribers/medicare-part-d-prescribers-by-provider-and-drug) | Unseen | 2024 (published May 2026) | Medicare patients only, pharmacy-dispensed drugs only |
+| [Open Payments](https://openpaymentsdata.cms.gov) general payments | Unseen | 2023, 2024, 2025 | Small payments are often not reported |
+| [NPPES NPI Registry](https://npiregistry.cms.hhs.gov) | Unseen | Live | Practice address and credential |
+| [ClinicalTrials.gov](https://clinicaltrials.gov) | Unseen | Live | No NPIs; matched by name and state |
+
+## Pinned datasets
+
+CMS publishes each year of Part D and Open Payments as its own dataset with its own id. Those ids are pinned in `packages/unseen/src/partd.ts` and `packages/unseen/src/payments.ts`, and were checked against the live APIs: the Part D file name ends in `DY24`, data year 2024, and each Open Payments id returned rows for its own program year.
+
+When CMS publishes Part D 2025 (expected mid-2027) or Open Payments 2026, add the new ids there.
+
+## What Claude sees
+
+Check sends Claude the piece and, for each claim, the twelve label sentences retrieval chose. Unseen sends Claude only your question. Neither sends patient data, because none of these sources contain any.
