@@ -42,6 +42,7 @@ Options:
   --rules <file>         a YAML rule pack (defaults to fda-core)
   --label-version <n>    check against a past label version instead of the current one
   --json                 print the report as JSON
+  --plain                print text even at a terminal, instead of the interactive screen
   --save                 write the report next to the piece (<file>.check.json) for watch
   --provider <name>      anthropic, openai, openrouter, gemini, groq or ollama (default: the first
                          whose key is set: ANTHROPIC_API_KEY, OPENAI_API_KEY, OPENROUTER_API_KEY,
@@ -62,6 +63,8 @@ export type Io = {
   stderr: (text: string) => void;
   // A status line that the next one replaces; null clears it. Absent when nobody is watching.
   status?: (text: string | null) => void;
+  // True when a person is at a terminal and the OpenTUI screen can run (under Bun).
+  interactive?: boolean;
   color: boolean;
 };
 
@@ -121,6 +124,7 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
         "label-version": { type: "string" },
         rules: { type: "string" },
         json: { type: "boolean", default: false },
+        plain: { type: "boolean", default: false },
         save: { type: "boolean", default: false },
         model: { type: "string" },
         provider: { type: "string" },
@@ -293,16 +297,38 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
     return 64;
   }
 
-  try {
-    io.status?.(`fetching the ${values.label} label`);
-    const label = await (deps.dailyMed ?? dailyMed()).resolve(values.label, labelVersion);
-    const model = deps.model ? deps.model(values.model) : claimModel(llm!);
-    const report = await check({ piece, label, model, pack, onProgress: (p) => io.status?.(describeProgress(p)) });
-    io.status?.(null);
+  const model = deps.model ? deps.model(values.model) : claimModel(llm!);
+  const labelQuery = values.label;
+  const runCheck = async (hooks: { label: (title: string) => void; progress: (p: Progress) => void }) => {
+    const label = await (deps.dailyMed ?? dailyMed()).resolve(labelQuery, labelVersion);
+    hooks.label(`${label.title} · label v${label.version}`);
+    const report = await check({ piece, label, model, pack, onProgress: hooks.progress });
     if (values.save) {
       const saved: SavedCheck = { ...report, checkedAt: new Date().toISOString() };
       await writeFile(sidecarPath(file), `${JSON.stringify(saved, null, 2)}\n`);
     }
+    return report;
+  };
+
+  // A person at a terminal under Bun gets the OpenTUI screen; scripts and --json get text.
+  if (io.interactive && !values.json && !values.plain) {
+    const { checkUi } = await import("./ui/check-ui.ts");
+    const { report, error } = await checkUi(file, labelQuery, runCheck);
+    if (report) {
+      io.stdout(formatReport(report, { color: io.color }));
+      return report.exitCode;
+    }
+    if (error) {
+      io.stderr(`openlabel: ${error}`);
+      return 69;
+    }
+    return 130;
+  }
+
+  try {
+    io.status?.(`fetching the ${labelQuery} label`);
+    const report = await runCheck({ label: () => {}, progress: (p) => io.status?.(describeProgress(p)) });
+    io.status?.(null);
     io.stdout(values.json ? JSON.stringify(report, null, 2) : formatReport(report, { color: io.color }));
     return report.exitCode;
   } catch (error) {
