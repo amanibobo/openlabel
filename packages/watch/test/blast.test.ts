@@ -36,10 +36,10 @@ function claim(id: string, kind: CheckedClaim["kind"], evidenceText: Sentence[])
 
 function saved(claims: CheckedClaim[], hasIsi: boolean): SavedCheck {
   return {
-    piece: "",
+    piece: hasIsi ? "Ask about Lorvexa. Important Safety Information: ..." : "Ask about Lorvexa.",
     label: { setId: before.setId, version: 1, title: "Lorvexa" },
     claims,
-    findings: hasIsi ? [] : [{ rule: "isi.present", severity: "violation", message: "" }],
+    findings: [],
     exitCode: 0,
     checkedAt: "2026-01-01T00:00:00Z",
   };

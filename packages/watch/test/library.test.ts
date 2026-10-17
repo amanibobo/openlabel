@@ -26,7 +26,7 @@ function fakeDailyMed(): { client: DailyMed; fetched: string[] } {
 function savedAgainst(label: Label, claimText: string, sentenceText: RegExp): SavedCheck {
   const cited = [...allSentences(label.sections)].find((s) => sentenceText.test(s.text))!;
   return {
-    piece: claimText,
+    piece: `${claimText} Important Safety Information: ...`,
     label: { setId: label.setId, version: label.version, title: label.title },
     claims: [
       {

@@ -37,13 +37,19 @@ const Pack = z.object({
 export type Rule = z.infer<typeof Rule>;
 export type RulePack = z.infer<typeof Pack>;
 
+const SAFETY_INFORMATION = "important safety information|safety information";
+
+export function carriesSafetyInformation(piece: string): boolean {
+  return new RegExp(SAFETY_INFORMATION, "i").test(piece);
+}
+
 export const FDA_CORE: RulePack = Pack.parse({
   pack: "fda-core",
   rules: [
     {
       id: "isi.present",
       type: "require",
-      pattern: "important safety information|safety information",
+      pattern: SAFETY_INFORMATION,
       message: "No Important Safety Information on the piece.",
     },
     {
