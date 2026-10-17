@@ -2,9 +2,10 @@ import { readFile, writeFile } from "node:fs/promises";
 import { extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
-import { check, claudeModel, FDA_CORE, loadPack, retriever, sidecarPath, type ClaimModel, type SavedCheck } from "@openlabel/check";
+import { check, claimModel, FDA_CORE, loadPack, retriever, sidecarPath, type ClaimModel, type SavedCheck } from "@openlabel/check";
 import { cite, dailyMed, type DailyMed } from "@openlabel/label";
-import { claudeQueryParser, unseen, type ParseQuery, type Search, type UnseenResult } from "@openlabel/unseen";
+import { anthropicLlm, llmFromEnv, type Llm } from "@openlabel/llm";
+import { queryParser, unseen, type ParseQuery, type Search, type UnseenResult } from "@openlabel/unseen";
 import { diffLabels, loadLibrary, watchLibrary } from "@openlabel/watch";
 import { claudeJudge, evaluateSkill, listSkills, openLabelTools, RESULTS_FILE, runSkill, summarize, type SkillResult } from "@openlabel/skills";
 import Anthropic from "@anthropic-ai/sdk";
@@ -42,7 +43,10 @@ Options:
   --label-version <n>    check against a past label version instead of the current one
   --json                 print the report as JSON
   --save                 write the report next to the piece (<file>.check.json) for watch
-  --model <id>           Claude model to use (default claude-opus-5-5)
+  --provider <name>      anthropic, openai, openrouter, gemini, groq or ollama (default: the first
+                         whose key is set: ANTHROPIC_API_KEY, OPENAI_API_KEY, OPENROUTER_API_KEY,
+                         GEMINI_API_KEY, GROQ_API_KEY)
+  --model <id>           model id; required for every provider but anthropic (default claude-opus-5-5)
   --state <code>         unseen: two-letter state
   --specialty <name>     unseen: Part D prescriber type, such as Dermatology
   --drug <generic>       unseen: generic drug name; repeat for several
@@ -63,6 +67,7 @@ export const SKILLS_DIR = fileURLToPath(new URL("../../../plugin/skills", import
 const SMS_PACK = fileURLToPath(new URL("../../../examples/pulse-sms.yaml", import.meta.url));
 
 export type Deps = {
+  llm?: () => Llm;
   evaluate?: (skill: string, only: string | undefined) => Promise<SkillResult>;
   dailyMed?: DailyMed;
   model?: (id: string | undefined) => ClaimModel;
@@ -89,6 +94,16 @@ export function pieceText(file: string, raw: string): string {
 }
 
 export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<number> {
+  // Returns null after reporting a setup problem (unknown provider, missing key or model).
+  const makeLlm = (values: { provider?: string | undefined; model?: string | undefined }): Llm | null => {
+    try {
+      return deps.llm ? deps.llm() : llmFromEnv({ ...(values.provider && { provider: values.provider }), ...(values.model && { model: values.model }) });
+    } catch (error) {
+      io.stderr(`openlabel: ${(error as Error).message}`);
+      return null;
+    }
+  };
+
   let parsed;
   try {
     parsed = parseArgs({
@@ -101,6 +116,7 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
         json: { type: "boolean", default: false },
         save: { type: "boolean", default: false },
         model: { type: "string" },
+        provider: { type: "string" },
         help: { type: "boolean", short: "h", default: false },
         state: { type: "string" },
         specialty: { type: "string" },
@@ -135,6 +151,10 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
     }
   }
   if (command === "skills") {
+    if (values.provider && values.provider !== "anthropic") {
+      io.stderr("openlabel: skills eval runs Claude, because the skills run in Claude Code; drop --provider");
+      return 64;
+    }
     if (file !== "eval" || (values.save && (positionals[2] || values.case))) {
       io.stderr(values.save ? `openlabel: --save needs a full run, without a skill or --case\n\n${USAGE}` : USAGE);
       return 64;
@@ -148,7 +168,7 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
           const id = values.model ?? "claude-opus-5-5";
           const tools = openLabelTools({
             dailyMed: dailyMed(),
-            model: claudeModel({ client, model: id }),
+            model: claimModel(anthropicLlm({ client, model: id })),
             packs: { "pulse-sms": await readFile(SMS_PACK, "utf8") },
           });
           const judge = claudeJudge(client, id);
@@ -223,10 +243,16 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
       io.stderr(USAGE);
       return 64;
     }
+    let parse = deps.parseQuery ?? null;
+    if (!byFlags && !parse) {
+      const llm = makeLlm(values);
+      if (!llm) return 64;
+      parse = queryParser(llm);
+    }
     try {
       const parsed = byFlags
         ? { state: values.state!.toUpperCase(), specialty: values.specialty!, drugs: values.drug!, maxPayments: maxPayments ?? null }
-        : await (deps.parseQuery ?? claudeQueryParser(values.model ? { model: values.model } : {}))(question);
+        : await parse!(question);
       const search: Search = { ...parsed, maxPayments: maxPayments ?? parsed.maxPayments, limit };
       const result = await (deps.unseen ?? ((s: Search) => unseen(s)))(search);
       io.stdout(values.json ? JSON.stringify(result, null, 2) : formatUnseen(result, { color: io.color }));
@@ -247,6 +273,9 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
     return 64;
   }
 
+  const llm = deps.model ? null : makeLlm(values);
+  if (!deps.model && !llm) return 64;
+
   let piece: string;
   let pack = FDA_CORE;
   try {
@@ -259,7 +288,7 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
 
   try {
     const label = await (deps.dailyMed ?? dailyMed()).resolve(values.label, labelVersion);
-    const model = (deps.model ?? ((id) => claudeModel(id ? { model: id } : {})))(values.model);
+    const model = deps.model ? deps.model(values.model) : claimModel(llm!);
     const report = await check({ piece, label, model, pack });
     if (values.save) {
       const saved: SavedCheck = { ...report, checkedAt: new Date().toISOString() };
