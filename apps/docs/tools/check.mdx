@@ -1,0 +1,55 @@
+---
+title: "Check"
+description: "Trace every claim in a piece to the label sentence that supports it."
+---
+
+Check reads a piece of promotional or HCP-facing copy, pulls out every claim a reader could take as a statement about the drug, and judges each one against the drug's current FDA label.
+
+```sh
+openlabel check examples/dupixent-email.html --label dupixent
+```
+
+## How a check runs
+
+<Steps>
+  <Step title="Fetch the label">
+    The label comes from DailyMed by brand name or set id. Its sections and table rows are split into sentences, each with a citation such as §14.1 ¶12. See [Labels and citations](/concepts/labels).
+  </Step>
+  <Step title="Extract claims">
+    Claude lists every claim and quotes it exactly. A quote that does not appear in the piece is dropped, so the model cannot invent a claim to judge. For each claim it also writes a search query in label vocabulary: "atopic dermatitis" for eczema, "chronic spontaneous urticaria" for hives.
+  </Step>
+  <Step title="Find candidate sentences">
+    A local keyword search (BM25) ranks the label's sentences against the claim and its query, and keeps twelve. Results tables can take at most two of those slots, and indication claims always see every indication in section 1.
+  </Step>
+  <Step title="Judge">
+    Claude gives a verdict and must cite the sentences it rests on. Citations to sentences it was not shown are discarded, and a claim judged supported with no valid citation becomes unsupported. See [Verdicts and exit codes](/concepts/verdicts).
+  </Step>
+  <Step title="Run the rule pack">
+    Rules run without a model: required safety information, banned superlatives, length limits. See [Rule packs](/concepts/rule-packs).
+  </Step>
+</Steps>
+
+## Reading the report
+
+```text
+  ~ overstated   “The only biologic that treats the cause of eczema”  §12.1 ¶2, §12.1 ¶1
+                 The label says only that dupilumab inhibits IL-4 and IL-13 signaling, states that
+                 its mechanism of action has not been definitively established, and makes no claim
+                 about treating the cause of eczema or about other biologics.
+```
+
+Each line gives the verdict, the claim as quoted from the piece, the label paragraphs it was judged against, and a one-sentence reason a reviewer can check against those paragraphs. `--json` prints the same report with the full text of every cited sentence.
+
+## Checking against an older label
+
+```sh
+openlabel check approved/email.html --label dupixent --label-version 53 --save
+```
+
+`--label-version` judges the piece against a past label, which is how you find out what a piece was approved against. `--save` writes the report next to the piece as `email.html.check.json`, which [Watch](/tools/watch) reads later.
+
+## Limits
+
+- Check reads text. It cannot yet judge what an image implies.
+- It knows the label and nothing else. A claim backed by a publication or data on file will come back unsupported; that verdict means "not in the label", not "false".
+- Each check makes one extraction call and one call per claim. Five claims take about twenty seconds.
