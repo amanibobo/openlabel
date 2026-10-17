@@ -1,90 +1,16 @@
+import type { Verdict } from "@openlabel/lorvexa";
+
 export const github = "https://github.com/amanibobo/openlabel";
 export const docs = "https://au-2a4a5dc8.mintlify.app";
 export const youtube = "https://www.youtube.com/";
 
 /* Check */
 
-export type Verdict = "supported" | "overstated" | "imagery" | "missing";
-
 export const verdictTone: Record<Verdict, "ok" | "warn" | "bad"> = {
   supported: "ok",
   overstated: "warn",
   imagery: "bad",
   missing: "bad",
-};
-
-export type Box = { left: number; top: number; width: number; height: number };
-
-export type Claim = {
-  id: string;
-  verdict: Verdict;
-  text: string;
-  quoted: boolean;
-  note: string;
-  cite: string;
-  sentence: string | null;
-  box: Box;
-};
-
-export const claims: readonly Claim[] = [
-  {
-    id: "headline",
-    verdict: "overstated",
-    text: "Live clear.",
-    quoted: true,
-    note: "Implies complete clearance. The label reports 38% clear or almost clear.",
-    cite: "§14.1",
-    sentence: "s-iga",
-    box: { left: 4.2, top: 5.2, width: 36.6, height: 12.4 },
-  },
-  {
-    id: "body",
-    verdict: "supported",
-    text: "Clear or almost-clear skin at week 16",
-    quoted: true,
-    note: "Matches the primary endpoint and its timepoint.",
-    cite: "§14.1 ¶3",
-    sentence: "s-iga",
-    box: { left: 4.2, top: 24.9, width: 26.4, height: 3.6 },
-  },
-  {
-    id: "subhead",
-    verdict: "overstated",
-    text: "Get back to the life you love.",
-    quoted: true,
-    note: "A quality-of-life promise. The label only reports a DLQI change.",
-    cite: "§14.3",
-    sentence: "s-dlqi",
-    box: { left: 4.2, top: 20, width: 29.4, height: 4.6 },
-  },
-  {
-    id: "imagery",
-    verdict: "imagery",
-    text: "Lifestyle image",
-    quoted: false,
-    note: "Shows a benefit the trials never measured, a pattern FDA cites often.",
-    cite: "§14",
-    sentence: "s-scope",
-    box: { left: 20, top: 29.5, width: 55.5, height: 59.5 },
-  },
-  {
-    id: "isi",
-    verdict: "missing",
-    text: "Important Safety Information",
-    quoted: false,
-    note: "No safety information anywhere on the piece.",
-    cite: "§5",
-    sentence: "s-eye",
-    box: { left: 4.2, top: 88.5, width: 22, height: 6.5 },
-  },
-];
-
-export const labelSentences: Record<string, string> = {
-  "s-eye": "Conjunctivitis and keratitis occurred more frequently in patients who received LORVEXA.",
-  "s-iga":
-    "At Week 16, 38% of patients treated with LORVEXA achieved IGA 0 (clear) or 1 (almost clear), compared to 9% with placebo.",
-  "s-scope": "Efficacy was assessed on skin clearance endpoints through Week 16.",
-  "s-dlqi": "Mean change from baseline in DLQI total score at Week 16 was −6.1 with LORVEXA and −2.3 with placebo.",
 };
 
 /* Watch */
