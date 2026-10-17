@@ -107,5 +107,6 @@ bun run record   # regenerate apps/web/public/demo/check.{mp4,webm} and the post
 - `packages/skills` runs the skills' eval suites.
 - `packages/cli` is the `openlabel` command.
 - `plugin` is the Claude Code plugin; `.claude-plugin/marketplace.json` lists it.
+- `apps/docs` is the documentation, built with [Mintlify](https://mintlify.com). Preview it with `npx mint dev` from that folder.
 - `apps/web` is the site. `app/content.ts` holds its copy and example data, and `app/geo.ts` projects county maps from `us-atlas` at build time.
 - `apps/web/assets-src/lorvexa-ad.html` is the source of `apps/web/public/images/lorvexa-ad.png`. The photo is by [Erik Allen on Pexels](https://www.pexels.com/photo/2589840/).
