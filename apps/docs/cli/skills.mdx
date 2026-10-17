@@ -1,0 +1,34 @@
+---
+title: "openlabel skills eval"
+description: "Run the skills' eval suites against Claude and print pass rates."
+---
+
+```sh
+openlabel skills eval [skill] [--case <id>]
+```
+
+```sh
+openlabel skills eval
+openlabel skills eval hcp-sms --case no-link-given
+```
+
+```text
+  claim-check         100%   4/4 cases
+  fair-balance        100%   3/3 cases
+  hcp-sms             100%   3/3 cases
+  label-diff          100%   4/4 cases
+  med-info-response   100%   4/4 cases
+
+  18 of 18 cases passed
+```
+
+| Option | Description |
+| --- | --- |
+| `[skill]` | Run one skill's suite. Defaults to all of them |
+| `--case <id>` | Run one case of that skill |
+| `--json` | Print every case with its checks and the full reply |
+| `--model <id>` | Claude model that runs the skills and grades `judge` checks |
+
+Failed cases are listed under their skill with only the checks that failed. Exits 1 if any case fails.
+
+Each case calls Claude at least twice and often runs `check`, which makes its own calls, so a full run takes a few minutes. Use `--json` to read the replies: a pass rate says how often a skill clears its checks, not how good the reply is. See [Skills](/tools/skills) for the case format.
