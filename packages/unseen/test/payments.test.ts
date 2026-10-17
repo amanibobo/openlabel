@@ -9,6 +9,7 @@ const noWait = async () => {};
 
 function server(answer: (dataset: string, body: any) => Response) {
   const requests: { dataset: string; body: any }[] = [];
+  const headers: Record<string, string>[] = [];
   let inFlight = 0;
   let peak = 0;
   const fetch = async (url: string, init?: RequestInit) => {
@@ -16,11 +17,12 @@ function server(answer: (dataset: string, body: any) => Response) {
     await new Promise((r) => setTimeout(r, 2));
     const dataset = url.split("/query/")[1]!.split("/")[0]!;
     const body = JSON.parse(String(init?.body));
+    headers.push(init?.headers as Record<string, string>);
     requests.push({ dataset, body });
     inFlight--;
     return answer(dataset, body);
   };
-  return { fetch, requests, peak: () => peak };
+  return { fetch, requests, headers, peak: () => peak };
 }
 
 describe("payments", () => {
@@ -41,6 +43,7 @@ describe("payments", () => {
     expect(result.get(b)).toEqual({ total: 0, byYear: { 2023: 0, 2024: 0, 2025: 0 }, topPayer: null });
     expect(api.requests).toHaveLength(3);
     expect(api.peak()).toBe(1);
+    expect(api.headers[0]?.["user-agent"]).toMatch(/^openlabel\//);
     expect(api.requests[0]?.body).toMatchObject({
       conditions: [{ property: "covered_recipient_npi", value: [a, b], operator: "in" }],
       groupings: ["covered_recipient_npi", PAYER],

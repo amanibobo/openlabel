@@ -14,6 +14,8 @@ const PAGE = 500;
 const RETRY_STATUSES = new Set([403, 429, 500, 502, 503, 504]);
 const RETRY_DELAYS_MS = [2000, 5000, 10000];
 
+export const USER_AGENT = "openlabel/0.1 (+https://github.com/amanibobo/openlabel)";
+
 const NPI = "covered_recipient_npi";
 const PAYER = "applicable_manufacturer_or_applicable_gpo_making_payment_name";
 const AMOUNT = "total_amount_of_payment_usdollars";
@@ -22,7 +24,12 @@ export type Sleep = (ms: number) => Promise<void>;
 const sleep: Sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function post(fetchFn: Fetch, url: string, body: unknown, wait: Sleep): Promise<Response> {
-  const init = { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) };
+  // The firewall turns away Node's default user agent ("node") as a bot, so say who's asking.
+  const init = {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json", "user-agent": USER_AGENT },
+    body: JSON.stringify(body),
+  };
   for (let attempt = 0; ; attempt++) {
     const response = await fetchFn(url, init);
     const delay = RETRY_DELAYS_MS[attempt];
