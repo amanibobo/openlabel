@@ -2,10 +2,12 @@ import type { ReactNode } from "react";
 import { CheckDemo } from "./components/CheckDemo";
 import { CopyCommand } from "./components/CopyCommand";
 import { DemoWindow } from "./components/DemoWindow";
+import { SkillsTable } from "./components/SkillsTable";
 import { UnseenExplorer } from "./components/UnseenExplorer";
 import { WatchDemo } from "./components/WatchDemo";
-import { docs, github, skills, unseenQueries, youtube } from "./content";
+import { docs, github, unseenQueries, youtube } from "./content";
 import { stateMap } from "./geo";
+import { skillRows } from "./skills";
 
 function Mark() {
   return (
@@ -49,6 +51,7 @@ function SectionHead({ name, command, title, children }: { name: string; command
 
 export default function Home() {
   const maps = unseenQueries.map((q) => stateMap(q));
+  const skillRun = skillRows();
 
   return (
     <div className="page">
@@ -117,24 +120,7 @@ export default function Home() {
         <SectionHead name="Skills" command="claude plugin install openlabel-skills" title="Agent skills for medical affairs.">
           Each ships with the eval suite that grades it.
         </SectionHead>
-        <div className="skills">
-          {skills.map((s) => {
-            const rate = (s.pass / s.cases) * 100;
-            return (
-              <div className="skill" key={s.name}>
-                <code>{s.name}</code>
-                <span className="skill-summary">{s.summary}</span>
-                <span className="bar">
-                  <span style={{ width: `${rate}%` }} />
-                </span>
-                <span className="skill-rate">{Number(rate.toFixed(1))}%</span>
-                <span className="skill-cases">
-                  {s.pass}/{s.cases}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+        <SkillsTable rows={skillRun.rows} ranAt={skillRun.ranAt} />
       </section>
 
       <section className="closing rail">
