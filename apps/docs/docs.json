@@ -1,0 +1,37 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "maple",
+  "name": "Open Label",
+  "colors": {
+    "primary": "#18181b",
+    "light": "#f5f5f7",
+    "dark": "#18181b"
+  },
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://openlabel-two.vercel.app"
+  },
+  "appearance": {
+    "default": "dark"
+  },
+  "fonts": {
+    "family": "Geist"
+  },
+  "navbar": {
+    "links": [{ "label": "Website", "href": "https://openlabel-two.vercel.app" }],
+    "primary": { "type": "github", "href": "https://github.com/amanibobo/openlabel" }
+  },
+  "navigation": {
+    "groups": [
+      { "group": "Get started", "pages": ["index", "quickstart"] },
+      { "group": "Tools", "pages": ["tools/check", "tools/watch", "tools/unseen", "tools/skills"] },
+      { "group": "Concepts", "pages": ["concepts/labels", "concepts/verdicts", "concepts/rule-packs", "concepts/data-sources"] },
+      { "group": "Reference", "pages": ["cli/overview", "cli/check", "cli/watch", "cli/unseen", "cli/search", "cli/diff", "cli/skills"] }
+    ]
+  },
+  "footer": {
+    "socials": { "github": "https://github.com/amanibobo/openlabel" }
+  }
+}
