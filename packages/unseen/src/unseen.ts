@@ -16,7 +16,8 @@ export async function unseen(search: Search, options: { fetch?: Fetch; concurren
   while (kept.length < search.limit && scanned < ranked.length) {
     const batch = ranked.slice(scanned, scanned + search.limit * 2);
     scanned += batch.length;
-    const paid = await mapLimit(batch, concurrency, async (p) => ({ ...p, payments: await payments(fetchFn, p.npi) }));
+    // Four at a time keeps Open Payments under its burst limit.
+    const paid = await mapLimit(batch, Math.min(concurrency, 4), async (p) => ({ ...p, payments: await payments(fetchFn, p.npi) }));
     for (const p of paid) {
       if (search.maxPayments !== null && p.payments.total > search.maxPayments) continue;
       if (kept.length < search.limit) kept.push({ ...p, location: null, trials: [] });

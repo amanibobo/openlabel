@@ -36,4 +36,39 @@ describe("payments", () => {
     const fetch = async () => Response.json({ count: 0, results: [] });
     expect(await payments(fetch, asNpi("1003808361"))).toEqual({ total: 0, byYear: { 2023: 0, 2024: 0, 2025: 0 }, topPayer: null });
   });
+
+  it("retries a refused request after a pause and then succeeds", async () => {
+    const waits: number[] = [];
+    let calls = 0;
+    const fetch = async () => (++calls <= 2 ? new Response("blocked", { status: 403 }) : Response.json({ count: 0, results: [] }));
+    const result = await payments(fetch, asNpi("1003808361"), [2024], async (ms) => void waits.push(ms));
+    expect(result.total).toBe(0);
+    expect(waits).toEqual([1000, 2000]);
+  });
+
+  it("gives up after three retries with the status in the error", async () => {
+    const fetch = async () => new Response("blocked", { status: 403 });
+    await expect(payments(fetch, asNpi("1003808361"), [2024], async () => {})).rejects.toThrow(/Open Payments returned 403: its firewall is refusing requests from this network/);
+  });
+
+  it("does not retry a request the server rejected as bad", async () => {
+    let calls = 0;
+    const fetch = async () => (calls++, new Response("bad", { status: 400 }));
+    await expect(payments(fetch, asNpi("1003808361"), [2024], async () => {})).rejects.toThrow("returned 400");
+    expect(calls).toBe(1);
+  });
+
+  it("asks for one year at a time", async () => {
+    let inFlight = 0;
+    let peak = 0;
+    const fetch = async () => {
+      peak = Math.max(peak, ++inFlight);
+      await new Promise((r) => setTimeout(r, 5));
+      inFlight--;
+      return Response.json({ count: 0, results: [] });
+    };
+    await payments(fetch, asNpi("1003808361"));
+    expect(peak).toBe(1);
+  });
 });
+

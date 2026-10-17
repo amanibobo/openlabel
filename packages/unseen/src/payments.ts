@@ -14,7 +14,24 @@ type Page = {
 
 const PAGE = 500;
 
-async function yearTotals(fetchFn: Fetch, npi: Npi, dataset: string) {
+// Open Payments sits behind a firewall that refuses bursts with 403s, so a refused or
+// failed request is retried after a growing pause before the search gives up.
+const RETRY_STATUSES = new Set([403, 429, 500, 502, 503, 504]);
+const RETRY_DELAYS_MS = [1000, 2000, 4000];
+
+export type Sleep = (ms: number) => Promise<void>;
+const sleep: Sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchWithRetry(fetchFn: Fetch, url: string, wait: Sleep): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const response = await fetchFn(url);
+    const delay = RETRY_DELAYS_MS[attempt];
+    if (response.ok || !RETRY_STATUSES.has(response.status) || delay === undefined) return response;
+    await wait(delay);
+  }
+}
+
+async function yearTotals(fetchFn: Fetch, npi: Npi, dataset: string, wait: Sleep) {
   let total = 0;
   const byPayer = new Map<string, number>();
   for (let offset = 0; ; offset += PAGE) {
@@ -31,7 +48,12 @@ async function yearTotals(fetchFn: Fetch, npi: Npi, dataset: string) {
       schema: "false",
       keys: "true",
     });
-    const response = await fetchFn(`https://openpaymentsdata.cms.gov/api/1/datastore/query/${dataset}/0?${params}`);
+    const response = await fetchWithRetry(fetchFn, `https://openpaymentsdata.cms.gov/api/1/datastore/query/${dataset}/0?${params}`, wait);
+    if (response.status === 403) {
+      throw new Error(
+        "Open Payments returned 403: its firewall is refusing requests from this network, usually for a few minutes after too many at once. Try again later.",
+      );
+    }
     if (!response.ok) throw new Error(`Open Payments returned ${response.status}`);
     const page = (await response.json()) as Page;
     for (const row of page.results) {
@@ -45,14 +67,19 @@ async function yearTotals(fetchFn: Fetch, npi: Npi, dataset: string) {
   return { total, byPayer };
 }
 
-export async function payments(fetchFn: Fetch, npi: Npi, years = Object.keys(OPEN_PAYMENTS).map(Number)): Promise<Payments> {
-  const results = await Promise.all(
-    years.map((year) => {
-      const dataset = OPEN_PAYMENTS[year];
-      if (!dataset) throw new Error(`no Open Payments dataset for ${year}`);
-      return yearTotals(fetchFn, npi, dataset);
-    }),
-  );
+export async function payments(
+  fetchFn: Fetch,
+  npi: Npi,
+  years = Object.keys(OPEN_PAYMENTS).map(Number),
+  wait: Sleep = sleep,
+): Promise<Payments> {
+  // One year at a time: running the years in parallel is what tripped the firewall.
+  const results = [];
+  for (const year of years) {
+    const dataset = OPEN_PAYMENTS[year];
+    if (!dataset) throw new Error(`no Open Payments dataset for ${year}`);
+    results.push(await yearTotals(fetchFn, npi, dataset, wait));
+  }
   const byYear: Record<number, number> = {};
   const byPayer = new Map<string, number>();
   results.forEach((result, i) => {
