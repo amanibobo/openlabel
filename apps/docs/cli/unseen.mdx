@@ -1,0 +1,23 @@
+---
+title: "openlabel unseen"
+description: "Find prescribers of a drug with little or no industry contact."
+---
+
+```sh
+openlabel unseen "<question>" [options]
+openlabel unseen --state <code> --specialty <name> --drug <generic> [--drug <generic> …] [options]
+```
+
+| Option | Description |
+| --- | --- |
+| `--state <code>` | Two-letter state |
+| `--specialty <name>` | Part D prescriber type, such as `Dermatology`, `Endocrinology` or `Hematology-Oncology` |
+| `--drug <generic>` | Generic name as CMS spells it, such as `Dupilumab`. Repeat for several |
+| `--max-payments <usd>` | Most industry payments allowed over 2023 to 2025. Omit for no limit |
+| `--limit <n>` | How many prescribers to list. Defaults to 10 |
+| `--json` | Print the result as JSON |
+| `--model <id>` | Claude model used to read a question |
+
+`--state`, `--specialty` and `--drug` together skip the model. With a question, any of these flags overrides what the question set.
+
+The run ends with how many top prescribers were checked to find the ones shown, and any drug with no Part D rows. See [Unseen](/tools/unseen) for what the data can and can't tell you.
