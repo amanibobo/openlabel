@@ -7,7 +7,7 @@ A concept site for open tools that keep every message to a doctor true to the FD
 - **Unseen** finds no-see and low-see doctors from public data (NPPES, CMS Part D, Open Payments, ClinicalTrials.gov).
 - **Skills** packages medical affairs agent skills, each with its eval suite.
 
-Check, Watch and Unseen work today. Skills is next; see `docs/plan.md`. Lorvexa, the drug on the site, is fictional, and the site's figures are illustrative.
+All four work today. See `docs/plan.md` for how they fit together. Lorvexa, the drug on the site, is fictional, and the site's figures are illustrative.
 
 ## Check a piece
 
@@ -46,6 +46,41 @@ Unseen ranks a specialty's Medicare Part D prescribers of a drug in one state, k
 
 Part D 2024 is the newest prescribing year CMS has published, so it runs about two years behind. Part D has no diagnoses and no infused drugs billed under Part B, and ClinicalTrials.gov has no NPIs, so trial matches are leads to check.
 
+## Read a label
+
+```sh
+npx openlabel search dupixent "conjunctivitis and keratitis"
+npx openlabel diff dupixent --from 53
+```
+
+`search` prints the label sentences that best match a question, with citations. `diff` prints every sentence that changed between two label versions, defaulting to the current one and the one before it.
+
+## Skills
+
+The repo is a Claude Code plugin marketplace with one plugin, `openlabel-skills`:
+
+```sh
+claude plugin marketplace add amanibobo/openlabel
+claude plugin install openlabel-skills@openlabel
+```
+
+| Skill | What it does |
+| --- | --- |
+| `claim-check` | Checks copy against the label and explains each verdict with a rewrite |
+| `label-diff` | Summarizes a label change and what it means for approved content |
+| `fair-balance` | Weighs risk prominence against benefit claims and drafts risk language from the label |
+| `hcp-sms` | Writes 160-character variants of approved copy and checks each one |
+| `med-info-response` | Drafts a response to an unsolicited HCP question, cited to the label |
+
+The skills call the `openlabel` command, so link it first with `npm link -w openlabel`. Each skill ships its eval suite in `evals.yaml`, run with:
+
+```sh
+npx openlabel skills eval                 # every skill
+npx openlabel skills eval hcp-sms --case no-link-given
+```
+
+The runner gives Claude the skill and the openlabel commands as tools, runs each case against real labels, and grades the reply with text checks and, where text cannot decide, a Claude judge.
+
 ## Run the site
 
 ```sh
@@ -69,6 +104,8 @@ bun run record   # regenerate apps/web/public/demo/check.{mp4,webm} and the post
 - `packages/check` extracts and judges claims and runs rule packs.
 - `packages/watch` diffs label versions and finds the saved claims a change touches.
 - `packages/unseen` joins CMS Part D, Open Payments, NPPES and ClinicalTrials.gov on NPI.
+- `packages/skills` runs the skills' eval suites.
 - `packages/cli` is the `openlabel` command.
+- `plugin` is the Claude Code plugin; `.claude-plugin/marketplace.json` lists it.
 - `apps/web` is the site. `app/content.ts` holds its copy and example data, and `app/geo.ts` projects county maps from `us-atlas` at build time.
 - `apps/web/assets-src/lorvexa-ad.html` is the source of `apps/web/public/images/lorvexa-ad.png`. The photo is by [Erik Allen on Pexels](https://www.pexels.com/photo/2589840/).
