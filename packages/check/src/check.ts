@@ -1,4 +1,5 @@
 import type { Label } from "@openlabel/label";
+import { mapLimit } from "@openlabel/util";
 import type { ClaimModel } from "./model.ts";
 import { retriever } from "./retrieve.ts";
 import { FDA_CORE, runRules, type RulePack } from "./rules.ts";
@@ -19,16 +20,6 @@ export function locate(piece: string, text: string): { start: number; end: numbe
   if (!words.length) return null;
   const match = new RegExp(words.join("\\s+"), "i").exec(piece);
   return match ? { start: match.index, end: match.index + match[0].length } : null;
-}
-
-async function mapLimit<T, R>(items: readonly T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
-  const results: R[] = new Array(items.length);
-  let next = 0;
-  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    for (let i = next++; i < items.length; i = next++) results[i] = await fn(items[i] as T);
-  });
-  await Promise.all(workers);
-  return results;
 }
 
 export async function check({ piece, label, model, pack = FDA_CORE, concurrency = 4 }: CheckOptions): Promise<Report> {

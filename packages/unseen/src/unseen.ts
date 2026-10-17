@@ -1,19 +1,9 @@
+import { mapLimit } from "@openlabel/util";
 import { location } from "./nppes.ts";
 import { PART_D, prescribers } from "./partd.ts";
 import { OPEN_PAYMENTS, payments } from "./payments.ts";
 import { trials } from "./trials.ts";
 import type { Candidate, Fetch, Search, UnseenResult } from "./types.ts";
-
-async function mapLimit<T, R>(items: readonly T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
-  const results: R[] = new Array(items.length);
-  let next = 0;
-  await Promise.all(
-    Array.from({ length: Math.min(limit, items.length) }, async () => {
-      for (let i = next++; i < items.length; i = next++) results[i] = await fn(items[i] as T);
-    }),
-  );
-  return results;
-}
 
 export async function unseen(search: Search, options: { fetch?: Fetch; concurrency?: number } = {}): Promise<UnseenResult> {
   const fetchFn = options.fetch ?? ((url) => fetch(url));
