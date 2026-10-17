@@ -12,6 +12,7 @@
     "./skills/claim-check",
     "./skills/label-diff",
     "./skills/fair-balance",
-    "./skills/hcp-sms"
+    "./skills/hcp-sms",
+    "./skills/med-info-response"
   ]
 }
