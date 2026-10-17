@@ -14,8 +14,9 @@ openlabel search dupixent "conjunctivitis and keratitis" --limit 3
 ```text
 Dupixent (dupilumab) · label v60
 
-  §5.2 ¶2  Conjunctivitis and keratitis occurred more frequently in AD subjects who received DUPIXENT compared to those who received placebo.
-  …
+  §6.1 ¶151  Conjunctivitis and Keratitis
+  §17 ¶9  Conjunctivitis, Keratitis, and Blepharitis
+  §6 ¶3  Conjunctivitis and Keratitis [see Warnings and Precautions (5.2)]
 ```
 
 | Option | Description |
@@ -24,3 +25,5 @@ Dupixent (dupilumab) · label v60
 | `--json` | Print `label` and `sentences` as JSON |
 
 Search is keyword retrieval (BM25), not a model, so it needs no API key. It works best with the label's own vocabulary: "atopic dermatitis" rather than "eczema", "IGA 0 or 1" rather than "clear skin". Table rows match on their table's caption as well as their cells.
+
+Short sentences that repeat the question's words, such as subheadings, tend to rank first. Raise `--limit` or rephrase to reach the sentences under them.
