@@ -1,4 +1,4 @@
-# Open Label
+# openlabel
 
 [![openlabel check reviewing a print ad, built with OpenTUI](docs/media/demo.gif)](https://openlabel-two.vercel.app)
 
