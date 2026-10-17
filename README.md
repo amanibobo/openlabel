@@ -5,7 +5,7 @@
 Open tools that keep every message to a doctor true to the FDA label.
 
 <p>
-<a href="LICENSE"><img src="https://img.shields.io/github/license/amanibobo/openlabel?style=flat-square" alt="MIT license" /></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT license" /></a>
 <a href="https://au-2a4a5dc8.mintlify.app"><img src="https://img.shields.io/badge/docs-mintlify-18E299?style=flat-square" alt="Docs" /></a>
 <img src="https://img.shields.io/badge/node-22%2B-5FA04E?style=flat-square" alt="Node 22+" />
 </p>
