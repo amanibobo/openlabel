@@ -36,6 +36,14 @@ describe("run", () => {
     expect(t.err.join("")).toMatch(/openlabel check <file> --label/);
   });
 
+  it("exits 64 for a command it does not know, including names every object inherits", async () => {
+    for (const command of ["frobnicate", "toString", "constructor"]) {
+      const t = io();
+      expect(await run([command], t.io)).toBe(64);
+      expect(t.err.join("")).toMatch(/^Usage:/);
+    }
+  });
+
   it("exits 64 when the piece file does not exist", async () => {
     const t = io();
     expect(await run(["check", "/nope/missing.md", "--label", "dupixent"], t.io)).toBe(64);
@@ -205,6 +213,12 @@ describe("run diff", () => {
     expect(await run(["diff", "dupixent"], t.io, { dailyMed: client })).toBe(0);
     expect(t.out.join("")).toContain("v53 (2026-02-23) to v58");
     expect(t.out.join("")).toContain("+ DUPIXENT is indicated for the treatment of adult and pediatric patients aged 2 years and older with chronic spontaneous urticaria");
+  });
+
+  it("exits 69 when the label has no earlier version to compare with", async () => {
+    const t = io();
+    expect(await run(["diff", "dupixent"], t.io, { dailyMed: memoryDailyMed([v53]) })).toBe(69);
+    expect(t.err.join("")).toBe("openlabel: Dupixent (dupilumab) has no earlier version on DailyMed");
   });
 
   it("exits 64 for a version that is not a number", async () => {

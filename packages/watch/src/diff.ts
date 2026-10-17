@@ -1,4 +1,4 @@
-import { allSentences, type Label, type Section, type Sentence } from "@openlabel/label";
+import { allSentences, type DailyMed, type Label, type Section, type Sentence } from "@openlabel/label";
 
 export type Category =
   | "boxed-warning"
@@ -160,4 +160,11 @@ export function diffLabels(before: Label, after: Label): LabelDiff {
     to: { version: after.version, effectiveDate: after.effectiveDate },
     sections,
   };
+}
+
+export async function diffDrugLabel(dailyMed: DailyMed, drug: string, versions: { from?: number | undefined; to?: number | undefined } = {}): Promise<LabelDiff> {
+  const after = await dailyMed.resolve(drug, versions.to);
+  const from = versions.from ?? (await dailyMed.versions(after.setId)).find((v) => v.version < after.version)?.version;
+  if (from === undefined) throw new Error(`${after.title} has no earlier version on DailyMed`);
+  return diffLabels(await dailyMed.label(after.setId, from), after);
 }
