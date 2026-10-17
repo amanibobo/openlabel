@@ -550,12 +550,6 @@ h1 .rest {
   border-radius: 14px;
   padding: 16px 22px 18px;
 }
-.unseen-top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-}
 .presets {
   display: flex;
   flex-wrap: wrap;
