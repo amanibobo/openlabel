@@ -1,5 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { mapLimit } from "@openlabel/util";
 import { grade, loadCases, type CheckResult, type Judge, type Transcript } from "./cases.ts";
 
 export type CaseResult = { id: string; passed: boolean; checks: CheckResult[]; reply: string; error?: string };
@@ -7,17 +8,6 @@ export type CaseResult = { id: string; passed: boolean; checks: CheckResult[]; r
 export type SkillResult = { skill: string; cases: CaseResult[]; passed: number; total: number };
 
 export type RunSkill = (skill: string, prompt: string) => Promise<Transcript>;
-
-async function mapLimit<T, R>(items: readonly T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
-  const results: R[] = new Array(items.length);
-  let next = 0;
-  await Promise.all(
-    Array.from({ length: Math.min(limit, items.length) }, async () => {
-      for (let i = next++; i < items.length; i = next++) results[i] = await fn(items[i] as T);
-    }),
-  );
-  return results;
-}
 
 export async function listSkills(skillsDir: string): Promise<string[]> {
   const entries = await readdir(skillsDir, { withFileTypes: true });
