@@ -1,9 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { betaZodOutputFormat, betaZodTool } from "@anthropic-ai/sdk/helpers/beta/zod";
+import { betaZodTool } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { claimModel } from "@openlabel/check";
 import { dailyMed } from "@openlabel/label";
-import { anthropicLlm } from "@openlabel/llm";
+import { anthropicLlm, type Llm } from "@openlabel/llm";
 import type { Judge, Transcript } from "./cases.ts";
 import { evaluateSkill, type SkillResult } from "./evaluate.ts";
 import { openLabelTools, type OpenLabelTools } from "./tools.ts";
@@ -79,21 +79,15 @@ export async function runSkill(options: {
 
 const Verdict = z.object({ pass: z.boolean(), reason: z.string() });
 
-export function claudeJudge(client: Anthropic, model: string): Judge {
+export function llmJudge(llm: Llm): Judge {
   return async (question, transcript, prompt) => {
-    const response = await client.beta.messages.parse({
-      model,
-      max_tokens: 4000,
+    const verdict = await llm.json({
       system: "You grade one reply against one yes/no question. Answer pass only if the reply clearly satisfies it.",
-      messages: [
-        {
-          role: "user",
-          content: `<request>\n${prompt}\n</request>\n\n<reply>\n${transcript.reply}\n</reply>\n\nQuestion: ${question}`,
-        },
-      ],
-      output_config: { effort: "medium", format: betaZodOutputFormat(Verdict) },
+      content: `<request>\n${prompt}\n</request>\n\n<reply>\n${transcript.reply}\n</reply>\n\nQuestion: ${question}`,
+      schema: Verdict,
+      effort: "medium",
     });
-    return response.parsed_output?.pass === true;
+    return verdict.pass;
   };
 }
 
@@ -103,12 +97,9 @@ export function claudeEvaluator(options: {
   packs: Record<string, string>;
 }): (skill: string, only: string | undefined) => Promise<SkillResult> {
   const client = new Anthropic();
-  const tools = openLabelTools({
-    dailyMed: dailyMed(),
-    model: claimModel(anthropicLlm({ client, model: options.model })),
-    packs: options.packs,
-  });
-  const judge = claudeJudge(client, options.model);
+  const llm = anthropicLlm({ client, model: options.model });
+  const tools = openLabelTools({ dailyMed: dailyMed(), model: claimModel(llm), packs: options.packs });
+  const judge = llmJudge(llm);
   return (skill, only) =>
     evaluateSkill(options.skillsDir, skill, {
       judge,
