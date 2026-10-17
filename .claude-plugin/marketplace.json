@@ -1,0 +1,15 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "openlabel",
+  "owner": { "name": "Amani Bobo", "url": "https://github.com/amanibobo" },
+  "description": "Open Label's agent skills for medical affairs and HCP engagement.",
+  "plugins": [
+    {
+      "name": "openlabel-skills",
+      "source": "./plugin",
+      "description": "Skills for writing to physicians and reviewing what gets written, each grounded in the FDA label through the openlabel CLI.",
+      "category": "productivity",
+      "keywords": ["pharma", "medical-affairs", "mlr", "fda-label"]
+    }
+  ]
+}
