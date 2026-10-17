@@ -1,0 +1,53 @@
+---
+title: "Watch"
+description: "Find the approved claims a label change made wrong."
+---
+
+A label revision can change a dose, widen an indication or add a warning. Every approved piece that relied on the old wording is now out of date, and nothing tells you which ones. Watch does.
+
+## Build a library
+
+Check each approved piece with `--save`, against the label version it was approved under:
+
+```sh
+openlabel check approved/csu-banner.txt --label dupixent --label-version 53 --save
+openlabel check approved/dupixent-email.html --label dupixent --label-version 53 --save
+```
+
+Each report lands next to its piece as `<file>.check.json`. It records the label version and the exact sentences every claim rests on.
+
+## Watch it
+
+```sh
+openlabel watch approved
+```
+
+```text
+Dupixent (dupilumab) · v53 (2026-02-23) to v60 (2026-04-22)
+  indication §1.7, dosing §2.3 §2.4 §2.9 §2.11, warning §5.2, adverse reactions §6.1 §6.2, ...
+
+  blast radius  2 pieces, 2 claims
+  ✗ csu-banner.txt
+    “DUPIXENT is approved for chronic spontaneous urticaria in patients 12 and older”  cites §1.7 ¶1, which changed
+      was  DUPIXENT is indicated for ... patients aged 12 years and older with chronic …
+      now  DUPIXENT is indicated for ... patients aged 2 years and older with chronic s…
+    safety information  §5.2 Conjunctivitis, Keratitis, and Blepharitis changed
+```
+
+For every piece whose label has moved on, Watch fetches both versions, diffs them, and reports three kinds of impact:
+
+| Impact | When it fires |
+| --- | --- |
+| Cited sentence changed | A sentence a claim cites was edited or removed. The report shows what it said then and says now. |
+| Indication changed | An indication claim cites the changed indication section, or cites nothing at all. |
+| Safety information outdated | The piece carries safety information and the boxed warning, contraindications or warnings changed. |
+
+Pieces whose label has not changed are listed as current. Pieces whose label changed in ways they don't rely on are listed as unaffected.
+
+## Running it on a schedule
+
+`watch` exits 0 when nothing in the folder is affected and 1 when something is, so a nightly CI job can open an issue whenever a label update touches approved content.
+
+## How the diff works
+
+Sentences are compared section by section with a longest-common-subsequence diff. An edited sentence is shown as one change rather than a removal and an addition when the two share at least half their words. Inserting a table renumbers every later table, so "Table 23" becoming "Table 24" is not reported as a change. See [`openlabel diff`](/cli/diff) to read a diff directly.
