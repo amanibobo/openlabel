@@ -1,12 +1,12 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { extname, resolve } from "node:path";
+import { extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { check, claudeModel, FDA_CORE, loadPack, retriever, sidecarPath, type ClaimModel, type SavedCheck } from "@openlabel/check";
 import { cite, dailyMed, type DailyMed } from "@openlabel/label";
 import { claudeQueryParser, unseen, type ParseQuery, type Search, type UnseenResult } from "@openlabel/unseen";
 import { diffLabels, loadLibrary, watchLibrary } from "@openlabel/watch";
-import { claudeJudge, evaluateSkill, listSkills, openLabelTools, runSkill, type SkillResult } from "@openlabel/skills";
+import { claudeJudge, evaluateSkill, listSkills, openLabelTools, RESULTS_FILE, runSkill, summarize, type SkillResult } from "@openlabel/skills";
 import Anthropic from "@anthropic-ai/sdk";
 import { formatDiff } from "./format-diff.ts";
 import { formatSkills } from "./format-skills.ts";
@@ -19,14 +19,15 @@ export const USAGE = `Usage:
   openlabel watch [folder]
   openlabel diff <drug> [--from <version>] [--to <version>]
   openlabel search <drug> "<question>" [--limit n]
-  openlabel skills eval [skill] [--case <id>]
+  openlabel skills eval [skill] [--case <id>] [--save]
   openlabel unseen "<question>"   or   openlabel unseen --state GA --specialty Dermatology --drug Dupilumab
 
 unseen ranks a specialty's Medicare Part D prescribers of a drug in a state and keeps the ones
 with little or no industry money (Open Payments), with practice locations and possible trial sites.
 
 skills eval runs each skill's eval suite against Claude with the openlabel tools and prints
-its pass rate; it exits 1 if any case fails.
+its pass rate; it exits 1 if any case fails. --save writes a full run's results to
+plugin/skills/results.json, which the site shows.
 
 search prints the label sentences that best match a question, with their citations.
 
@@ -134,8 +135,8 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
     }
   }
   if (command === "skills") {
-    if (file !== "eval") {
-      io.stderr(USAGE);
+    if (file !== "eval" || (values.save && (positionals[2] || values.case))) {
+      io.stderr(values.save ? `openlabel: --save needs a full run, without a skill or --case\n\n${USAGE}` : USAGE);
       return 64;
     }
     try {
@@ -160,6 +161,10 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
         })());
       const results: SkillResult[] = [];
       for (const name of names) results.push(await evaluate(name, values.case));
+      if (values.save) {
+        const file = summarize(results, values.model ?? "claude-opus-5-5", new Date());
+        await writeFile(join(SKILLS_DIR, RESULTS_FILE), `${JSON.stringify(file, null, 2)}\n`);
+      }
       io.stdout(values.json ? JSON.stringify(results, null, 2) : formatSkills(results, { color: io.color }));
       return results.every((r) => r.passed === r.total) ? 0 : 1;
     } catch (error) {

@@ -140,6 +140,14 @@ describe("run skills eval", () => {
   });
 });
 
+describe("run skills eval --save", () => {
+  it("refuses to save a partial run", async () => {
+    const t = io();
+    expect(await run(["skills", "eval", "hcp-sms", "--save"], t.io, { evaluate: async () => ({ skill: "x", passed: 1, total: 1, cases: [] }) })).toBe(64);
+    expect(t.err.join("")).toContain("--save needs a full run");
+  });
+});
+
 describe("run search", () => {
   it("prints matching label sentences with citations", async () => {
     const t = io();

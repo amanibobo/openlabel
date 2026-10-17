@@ -120,12 +120,11 @@ export const unseenQueries: readonly UnseenQuery[] = [
 
 /* Skills */
 
-export type Skill = { name: string; summary: string; cases: number; pass: number };
-
-export const skills: readonly Skill[] = [
-  { name: "claim-check", summary: "Checks copy against the label and rewrites every claim that overreaches.", cases: 4, pass: 4 },
-  { name: "label-diff", summary: "Explains a label change and what it means for approved content.", cases: 4, pass: 4 },
-  { name: "fair-balance", summary: "Weighs risk prominence against benefit claims and drafts risk language.", cases: 3, pass: 3 },
-  { name: "hcp-sms", summary: "Writes 160-character variants of approved copy and checks each one.", cases: 3, pass: 3 },
-  { name: "med-info-response", summary: "Drafts a cited response to an unsolicited HCP question.", cases: 4, pass: 4 },
-];
+// Pass rates come from plugin/skills/results.json; this is only the one-line pitch per skill.
+export const skillSummaries: Record<string, string> = {
+  "claim-check": "Checks copy against the label and rewrites every claim that overreaches.",
+  "label-diff": "Explains a label change and what it means for approved content.",
+  "fair-balance": "Weighs risk prominence against benefit claims and drafts risk language.",
+  "hcp-sms": "Writes 160-character variants of approved copy and checks each one.",
+  "med-info-response": "Drafts a cited response to an unsolicited HCP question.",
+};
