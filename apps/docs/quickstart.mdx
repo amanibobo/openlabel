@@ -16,14 +16,21 @@ description: "Install the CLI and check your first piece against a real label."
 
     `npm link` puts the `openlabel` command on your path. Without it, run `npx openlabel` from the repo.
   </Step>
-  <Step title="Add an Anthropic API key">
-    Check, the plain-language form of Unseen, and the skill evals call Claude. Put your key in a `.env` file in the directory you run the command from:
+  <Step title="Add a model key">
+    Check and the plain-language form of Unseen call a model. Put a key in a `.env` file in the directory you run the command from. Claude is the default:
 
     ```sh
     echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
     ```
 
-    `.env` is in `.gitignore`. Search, diff, watch and Unseen with flags need no key.
+    Any provider with an OpenAI-style API works too, with a model id:
+
+    ```sh
+    echo "OPENROUTER_API_KEY=sk-or-..." > .env
+    echo "OPENLABEL_MODEL=<model id from openrouter.ai/models>" >> .env
+    ```
+
+    `.env` is in `.gitignore`. Search, diff, watch and Unseen with flags need no key. See [Models and providers](/cli/overview#models-and-providers).
   </Step>
   <Step title="Check a piece">
     The repo ships an example HCP email for Dupixent.

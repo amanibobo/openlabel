@@ -5,20 +5,41 @@ description: "Every openlabel command, what it needs, and how it exits."
 
 | Command | Does | Needs an API key |
 | --- | --- | --- |
-| [`check`](/cli/check) | Judges a piece's claims against its label | Yes |
+| [`check`](/cli/check) | Judges a piece's claims against its label | Yes, any provider |
 | [`watch`](/cli/watch) | Lists saved claims a label change touches | No |
-| [`unseen`](/cli/unseen) | Finds prescribers with little industry contact | Only for a question |
+| [`unseen`](/cli/unseen) | Finds prescribers with little industry contact | Only for a question, any provider |
 | [`search`](/cli/search) | Prints the label sentences matching a question | No |
 | [`diff`](/cli/diff) | Prints what changed between two label versions | No |
-| [`skills eval`](/cli/skills) | Runs the skills' eval suites | Yes |
+| [`skills eval`](/cli/skills) | Runs the skills' eval suites | Yes, Anthropic |
 
 Every command takes `--json` to print machine-readable output instead of text, and `-h` or `--help`.
 
 Color is on when output goes to a terminal. Set `NO_COLOR` to turn it off.
 
-## API key
+## Models and providers
 
-Commands that call Claude read `ANTHROPIC_API_KEY`. A `.env` file in the directory you run from is loaded automatically. `--model <id>` picks a different Claude model; the default is `claude-opus-5-5`.
+Check and the plain-language form of Unseen work with any of these. Open Label uses the provider you name with `--provider` (or `OPENLABEL_PROVIDER`), otherwise the first one whose key is set, in this order:
+
+| Provider | Key | Model |
+| --- | --- | --- |
+| `anthropic` | `ANTHROPIC_API_KEY` | Optional. Defaults to `claude-opus-5-5` |
+| `openai` | `OPENAI_API_KEY` | Required |
+| `openrouter` | `OPENROUTER_API_KEY` | Required |
+| `gemini` | `GEMINI_API_KEY` | Required |
+| `groq` | `GROQ_API_KEY` | Required |
+| `ollama` | none | Required; runs against `http://localhost:11434` |
+
+Set the model with `--model <id>` or `OPENLABEL_MODEL`. Every provider except Anthropic needs one, because Open Label can't know which of a provider's models you have access to. `OPENLABEL_BASE_URL` points any OpenAI-style provider at another address, such as a company gateway.
+
+```sh
+openlabel check email.html --label dupixent --provider openrouter --model <model id>
+```
+
+Open Label asks every model for JSON that matches a schema and rejects answers that don't. The guards on verdicts apply whatever the model: a claim must quote the piece, and a citation must be a sentence the model was shown. How well a model judges claims still varies, so run a few pieces you know before relying on one.
+
+`skills eval` always runs Claude, because the skills are written for Claude Code.
+
+A `.env` file in the directory you run from is loaded automatically.
 
 ## Exit codes
 

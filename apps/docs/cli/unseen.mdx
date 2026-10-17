@@ -16,7 +16,8 @@ openlabel unseen --state <code> --specialty <name> --drug <generic> [--drug <gen
 | `--max-payments <usd>` | Most industry payments allowed over 2023 to 2025. Omit for no limit |
 | `--limit <n>` | How many prescribers to list. Defaults to 10 |
 | `--json` | Print the result as JSON |
-| `--model <id>` | Claude model used to read a question |
+| `--provider <name>` | Which model provider reads a question. See [Models and providers](/cli/overview#models-and-providers) |
+| `--model <id>` | Model id. Defaults to `claude-opus-5-5` on Anthropic; required elsewhere |
 
 `--state`, `--specialty` and `--drug` together skip the model. With a question, any of these flags overrides what the question set.
 
