@@ -4,7 +4,7 @@ import { CheckDemo } from "./components/CheckDemo";
 import { CopyCommand } from "./components/CopyCommand";
 import { DemoWindow } from "./components/DemoWindow";
 import { UnseenExplorer } from "./components/UnseenExplorer";
-import { github, labelDiff, skills, unseenQueries } from "./content";
+import { docs, github, labelDiff, skills, unseenQueries } from "./content";
 import { stateMap } from "./geo";
 
 function Mark() {
@@ -52,6 +52,7 @@ export default function Home() {
           <a href="#watch">Watch</a>
           <a href="#unseen">Unseen</a>
           <a href="#skills">Skills</a>
+          <a href={docs}>Docs</a>
           <a href={github}>GitHub</a>
         </nav>
       </header>

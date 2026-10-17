@@ -24,6 +24,7 @@ function col(text: string, width: number): string {
 }
 
 export const github = "https://github.com/amanibobo/openlabel";
+export const docs = "https://au-2a4a5dc8.mintlify.app";
 
 /* Check */
 
