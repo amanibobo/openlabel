@@ -134,7 +134,7 @@ function summaryLine(): Line {
 
 type Box = { left: number; top: number; width: number; height: number };
 
-export type Geometry = {
+type Geometry = {
   image: Box;
   pane: { left: number; width: number };
   claimTops: number[];
@@ -144,7 +144,7 @@ export type Geometry = {
 };
 
 // Each claim's slot is sized for its resolved form so rows never shift as claims resolve.
-export function geometry(cols: number, rows: number): Geometry {
+function geometry(cols: number, rows: number): Geometry {
   let imageWidth = Math.min(Math.round(cols * IMAGE_SHARE), cols - 2 * MARGIN_X - PANE_GAP - MIN_PANE);
   let imageHeight = Math.round((imageWidth * IMAGE_SIZE.height) / IMAGE_SIZE.width / 2);
   const maxHeight = rows - CONTENT_Y - 1 - DETAIL_ROWS - 1;

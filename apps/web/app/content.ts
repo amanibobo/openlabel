@@ -1,28 +1,3 @@
-export type Tone = "p" | "cmd" | "arg" | "out" | "dim" | "hi" | "ok" | "warn" | "bad";
-export type Span = readonly [Tone, string];
-export type Line = readonly Span[];
-
-export type Session = {
-  title: string;
-  command: string;
-  args: string;
-  output: readonly Line[];
-};
-
-export function promptLine(command: string, args: string): Line {
-  return [
-    ["p", "❯ "],
-    ["cmd", command],
-    ["arg", args ? ` ${args}` : ""],
-  ];
-}
-
-const blank: Line = [];
-
-function col(text: string, width: number): string {
-  return text.padEnd(width);
-}
-
 export const github = "https://github.com/amanibobo/openlabel";
 export const docs = "https://au-2a4a5dc8.mintlify.app";
 export const youtube = "https://www.youtube.com/";
@@ -37,8 +12,6 @@ export const verdictTone: Record<Verdict, "ok" | "warn" | "bad"> = {
   imagery: "bad",
   missing: "bad",
 };
-
-const verdictGlyph: Record<Verdict, string> = { supported: "✓", overstated: "~", imagery: "✗", missing: "✗" };
 
 export type Box = { left: number; top: number; width: number; height: number };
 
@@ -114,26 +87,6 @@ export const labelSentences: Record<string, string> = {
   "s-dlqi": "Mean change from baseline in DLQI total score at Week 16 was −6.1 with LORVEXA and −2.3 with placebo.",
 };
 
-export const checkSession: Session = {
-  title: "openlabel check",
-  command: "openlabel check",
-  args: "pulse/lorvexa-print-0412 --label lorvexa",
-  output: [
-    [["dim", "  label    "], ["out", "Lorvexa (velorimab) prescribing information, rev 06/2026"]],
-    [["dim", "  claims   "], ["out", `${claims.length} extracted, each matched against 214 label sentences`]],
-    blank,
-    ...claims.map(
-      (c): Line => [
-        [verdictTone[c.verdict], col(`  ${verdictGlyph[c.verdict]} ${c.verdict}`, 17)],
-        ["out", col(c.quoted ? `"${c.text}"` : c.text, 40)],
-        ["dim", c.cite],
-      ],
-    ),
-    blank,
-    [["hi", "  1 supported, 2 overstated, 2 violations"], ["dim", " · exit 2"]],
-  ],
-};
-
 /* Watch */
 
 export type DiffLine = { kind: "same" | "del" | "add"; text: string };
@@ -156,13 +109,13 @@ export const labelDiff: readonly { section: string; lines: readonly DiffLine[] }
   },
 ];
 
-export type Piece = { file: string; kind: string; claims: number; reason: string; severity: "bad" | "warn" };
+export type Piece = { file: string; claims: number; reason: string; severity: "bad" | "warn" };
 
 export const blastPieces: readonly Piece[] = [
-  { file: "hcp-email-0311.html", kind: "Email", claims: 3, reason: "600 mg loading dose", severity: "bad" },
-  { file: "sms-0412.md", kind: "SMS", claims: 1, reason: "safety link to rev 03/2026", severity: "bad" },
-  { file: "leave-behind-0207.pdf", kind: "Leave-behind", claims: 2, reason: "ISI omits keratitis", severity: "bad" },
-  { file: "dosing-calculator.json", kind: "Calculator", claims: 1, reason: "default dose 600 mg", severity: "warn" },
+  { file: "hcp-email-0311.html", claims: 3, reason: "600 mg loading dose", severity: "bad" },
+  { file: "sms-0412.md", claims: 1, reason: "safety link to rev 03/2026", severity: "bad" },
+  { file: "leave-behind-0207.pdf", claims: 2, reason: "ISI omits keratitis", severity: "bad" },
+  { file: "dosing-calculator.json", claims: 1, reason: "default dose 600 mg", severity: "warn" },
 ];
 
 /* Unseen */

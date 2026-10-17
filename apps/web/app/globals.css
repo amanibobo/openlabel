@@ -241,20 +241,6 @@ h1 .rest {
   white-space: pre;
 }
 
-.t-p,
-.t-dim {
-  color: var(--dim);
-}
-.t-cmd,
-.t-hi {
-  color: var(--ink);
-}
-.t-arg {
-  color: var(--arg);
-}
-.t-out {
-  color: var(--body);
-}
 .t-ok {
   color: var(--ok);
 }
@@ -263,25 +249,6 @@ h1 .rest {
 }
 .t-bad {
   color: var(--bad);
-}
-
-.caret {
-  display: inline-block;
-  width: 7px;
-  height: 15px;
-  background: var(--ink);
-  vertical-align: -2px;
-  animation: blink 1.1s steps(1) infinite;
-}
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .caret {
-    animation: none;
-  }
 }
 
 .demo .term-body {
@@ -582,12 +549,6 @@ h1 .rest {
   background: var(--surface);
   border-radius: 14px;
   padding: 16px 22px 18px;
-}
-.unseen-top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
 }
 .presets {
   display: flex;

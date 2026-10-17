@@ -1,16 +1,6 @@
-import { existsSync } from "node:fs";
-import path from "node:path";
-import { checkSession } from "../content";
 import { Window } from "./Terminal";
-import { TypedTerminal } from "./TypedTerminal";
-
-const demoDir = path.join(process.cwd(), "public", "demo");
 
 export function DemoWindow() {
-  if (!existsSync(path.join(demoDir, "check.mp4"))) {
-    return <TypedTerminal session={checkSession} />;
-  }
-
   return (
     <Window title="openlabel check, built with OpenTUI">
       <video
