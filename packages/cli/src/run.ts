@@ -1,8 +1,8 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { extname, resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { check, claudeModel, FDA_CORE, loadPack, sidecarPath, type ClaimModel, type SavedCheck } from "@openlabel/check";
-import { dailyMed, type DailyMed } from "@openlabel/label";
+import { check, claudeModel, FDA_CORE, loadPack, retriever, sidecarPath, type ClaimModel, type SavedCheck } from "@openlabel/check";
+import { cite, dailyMed, type DailyMed } from "@openlabel/label";
 import { claudeQueryParser, unseen, type ParseQuery, type Search, type UnseenResult } from "@openlabel/unseen";
 import { diffLabels, loadLibrary, watchLibrary } from "@openlabel/watch";
 import { formatDiff } from "./format-diff.ts";
@@ -14,10 +14,13 @@ export const USAGE = `Usage:
   openlabel check <file> --label <drug name or DailyMed set id> [options]
   openlabel watch [folder]
   openlabel diff <drug> [--from <version>] [--to <version>]
+  openlabel search <drug> "<question>" [--limit n]
   openlabel unseen "<question>"   or   openlabel unseen --state GA --specialty Dermatology --drug Dupilumab
 
 unseen ranks a specialty's Medicare Part D prescribers of a drug in a state and keeps the ones
 with little or no industry money (Open Payments), with practice locations and possible trial sites.
+
+search prints the label sentences that best match a question, with their citations.
 
 diff prints every sentence that changed between two versions of a label (default: the
 current version and the one before it).
@@ -112,6 +115,28 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
       const result = await watchLibrary(await loadLibrary(folder), deps.dailyMed ?? dailyMed());
       io.stdout(values.json ? JSON.stringify(result, null, 2) : formatWatch(result, { color: io.color, cwd: folder }));
       return result.pieces.some((p) => p.impacts.length) ? 1 : 0;
+    } catch (error) {
+      io.stderr(`openlabel: ${(error as Error).message}`);
+      return 69;
+    }
+  }
+  if (command === "search") {
+    const question = positionals.slice(2).join(" ").trim();
+    const limit = Number(values.limit ?? 8);
+    if (!file || !question || !Number.isInteger(limit) || limit < 1) {
+      io.stderr(USAGE);
+      return 64;
+    }
+    try {
+      const label = await (deps.dailyMed ?? dailyMed()).resolve(file);
+      const hits = retriever(label)(question, "other", limit);
+      const lines = hits.map((s) => `${cite(s)}  ${s.context ? `(${s.context}) ` : ""}${s.text}`);
+      io.stdout(
+        values.json
+          ? JSON.stringify({ label: { title: label.title, version: label.version }, sentences: hits }, null, 2)
+          : [`${label.title} · label v${label.version}`, "", ...lines.map((l) => `  ${l}`)].join("\n"),
+      );
+      return 0;
     } catch (error) {
       io.stderr(`openlabel: ${(error as Error).message}`);
       return 69;

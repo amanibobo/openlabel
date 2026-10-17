@@ -115,6 +115,21 @@ describe("run watch", () => {
   });
 });
 
+describe("run search", () => {
+  it("prints matching label sentences with citations", async () => {
+    const t = io();
+    expect(await run(["search", "dupixent", "conjunctivitis", "and", "keratitis", "--limit", "3"], t.io, { dailyMed: fakeDailyMed })).toBe(0);
+    const lines = t.out.join("").split("\n");
+    expect(lines[0]).toBe("Dupixent (dupilumab) · label v60");
+    expect(lines.slice(2)).toHaveLength(3);
+    expect(lines[2]).toMatch(/^ {2}§\S+ ¶\d+ {2}.*(conjunctivitis|keratitis)/i);
+  });
+
+  it("exits 64 without a question", async () => {
+    expect(await run(["search", "dupixent"], io().io)).toBe(64);
+  });
+});
+
 describe("run diff", () => {
   const v53 = parseSpl(readFileSync(new URL("../../label/test/fixtures/dupixent-v53.xml", import.meta.url), "utf8"));
   const v58 = parseSpl(readFileSync(new URL("../../label/test/fixtures/dupixent-v58.xml", import.meta.url), "utf8"));
