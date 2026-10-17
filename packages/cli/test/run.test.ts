@@ -4,6 +4,7 @@ import { join } from "node:path";
 import type { ClaimModel } from "@openlabel/check";
 import { parseSpl, type DailyMed } from "@openlabel/label";
 import { describe, expect, it } from "vitest";
+import type { Search, UnseenResult } from "@openlabel/unseen";
 import { pieceText, run } from "../src/run.ts";
 
 const label = parseSpl(readFileSync(new URL("../../label/test/fixtures/dupixent-v60.xml", import.meta.url), "utf8"));
@@ -111,6 +112,38 @@ describe("run watch", () => {
 
   it("exits 69 when the folder does not exist", async () => {
     expect(await run(["watch", "/no/such/folder"], io().io, { dailyMed: fakeDailyMed })).toBe(69);
+  });
+});
+
+describe("run unseen", () => {
+  const empty = async (search: Search): Promise<UnseenResult> => ({
+    search, claimsYear: 2024, paymentYears: [2023, 2024, 2025], candidates: [], unmatchedDrugs: [], scanned: 0,
+  });
+
+  it("builds a search from flags without asking the model", async () => {
+    const seen: Search[] = [];
+    const t = io();
+    const code = await run(
+      ["unseen", "--state", "ga", "--specialty", "Dermatology", "--drug", "Dupilumab", "--drug", "Tralokinumab", "--max-payments", "0", "--limit", "3"],
+      t.io,
+      { parseQuery: async () => { throw new Error("should not parse"); }, unseen: async (s) => (seen.push(s), empty(s)) },
+    );
+    expect(code).toBe(0);
+    expect(seen[0]).toEqual({ state: "GA", specialty: "Dermatology", drugs: ["Dupilumab", "Tralokinumab"], maxPayments: 0, limit: 3 });
+  });
+
+  it("parses a question and lets a flag override its payment limit", async () => {
+    const seen: Search[] = [];
+    const parseQuery = async () => ({ state: "MS", specialty: "Endocrinology", drugs: ["Semaglutide"], maxPayments: 100 });
+    await run(["unseen", "Delta endocrinologists on GLP-1s", "--max-payments", "500"], io().io, {
+      parseQuery,
+      unseen: async (s) => (seen.push(s), empty(s)),
+    });
+    expect(seen[0]).toMatchObject({ state: "MS", drugs: ["Semaglutide"], maxPayments: 500, limit: 10 });
+  });
+
+  it("exits 64 with no question and no flags", async () => {
+    expect(await run(["unseen"], io().io)).toBe(64);
   });
 });
 

@@ -3,13 +3,19 @@ import { extname, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { check, claudeModel, FDA_CORE, loadPack, sidecarPath, type ClaimModel, type SavedCheck } from "@openlabel/check";
 import { dailyMed, type DailyMed } from "@openlabel/label";
+import { claudeQueryParser, unseen, type ParseQuery, type Search, type UnseenResult } from "@openlabel/unseen";
 import { loadLibrary, watchLibrary } from "@openlabel/watch";
 import { formatReport } from "./format.ts";
+import { formatUnseen } from "./format-unseen.ts";
 import { formatWatch } from "./format-watch.ts";
 
 export const USAGE = `Usage:
   openlabel check <file> --label <drug name or DailyMed set id> [options]
   openlabel watch [folder]
+  openlabel unseen "<question>"   or   openlabel unseen --state GA --specialty Dermatology --drug Dupilumab
+
+unseen ranks a specialty's Medicare Part D prescribers of a drug in a state and keeps the ones
+with little or no industry money (Open Payments), with practice locations and possible trial sites.
 
 watch reads the reports that check --save left in a folder (default: the current one),
 diffs each piece's label against the current version, and lists what the change touches.
@@ -20,6 +26,11 @@ Options:
   --json                 print the report as JSON
   --save                 write the report next to the piece (<file>.check.json) for watch
   --model <id>           Claude model to use (default claude-opus-5-5)
+  --state <code>         unseen: two-letter state
+  --specialty <name>     unseen: Part D prescriber type, such as Dermatology
+  --drug <generic>       unseen: generic drug name; repeat for several
+  --max-payments <usd>   unseen: most industry payments allowed over three years
+  --limit <n>            unseen: how many doctors to list (default 10)
   -h, --help             show this help
 
 Exit codes: 0 all supported, 1 overstated or warning, 2 off-label, unsupported or violation,
@@ -34,6 +45,8 @@ export type Io = {
 export type Deps = {
   dailyMed?: DailyMed;
   model?: (id: string | undefined) => ClaimModel;
+  parseQuery?: ParseQuery;
+  unseen?: (search: Search) => Promise<UnseenResult>;
 };
 
 export function pieceText(file: string, raw: string): string {
@@ -68,6 +81,11 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
         save: { type: "boolean", default: false },
         model: { type: "string" },
         help: { type: "boolean", short: "h", default: false },
+        state: { type: "string" },
+        specialty: { type: "string" },
+        drug: { type: "string", multiple: true },
+        "max-payments": { type: "string" },
+        limit: { type: "string" },
       },
     });
   } catch (error) {
@@ -87,6 +105,28 @@ export async function run(argv: string[], io: Io, deps: Deps = {}): Promise<numb
       const result = await watchLibrary(await loadLibrary(folder), deps.dailyMed ?? dailyMed());
       io.stdout(values.json ? JSON.stringify(result, null, 2) : formatWatch(result, { color: io.color, cwd: folder }));
       return result.pieces.some((p) => p.impacts.length) ? 1 : 0;
+    } catch (error) {
+      io.stderr(`openlabel: ${(error as Error).message}`);
+      return 69;
+    }
+  }
+  if (command === "unseen") {
+    const limit = Number(values.limit ?? 10);
+    const maxPayments = values["max-payments"] === undefined ? undefined : Number(values["max-payments"]);
+    const question = positionals.slice(1).join(" ").trim();
+    const byFlags = values.state && values.specialty && values.drug?.length;
+    if (!Number.isInteger(limit) || limit < 1 || (maxPayments !== undefined && !(maxPayments >= 0)) || (!question && !byFlags)) {
+      io.stderr(USAGE);
+      return 64;
+    }
+    try {
+      const parsed = byFlags
+        ? { state: values.state!.toUpperCase(), specialty: values.specialty!, drugs: values.drug!, maxPayments: maxPayments ?? null }
+        : await (deps.parseQuery ?? claudeQueryParser(values.model ? { model: values.model } : {}))(question);
+      const search: Search = { ...parsed, maxPayments: maxPayments ?? parsed.maxPayments, limit };
+      const result = await (deps.unseen ?? ((s: Search) => unseen(s)))(search);
+      io.stdout(values.json ? JSON.stringify(result, null, 2) : formatUnseen(result, { color: io.color }));
+      return 0;
     } catch (error) {
       io.stderr(`openlabel: ${(error as Error).message}`);
       return 69;
