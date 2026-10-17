@@ -1,0 +1,16 @@
+---
+title: "openlabel watch"
+description: "List the saved claims a label change touches."
+---
+
+```sh
+openlabel watch [folder]
+```
+
+Reads every `*.check.json` that [`check --save`](/cli/check) left in `folder` and its subfolders (default: the current directory). For each piece whose label has a newer version, it diffs the version the piece was checked against with the current one and lists the impacts. File names are shown relative to `folder`.
+
+| Option | Description |
+| --- | --- |
+| `--json` | Print the result as JSON: `pieces` (each with its diff and impacts) and `current` |
+
+Exits 0 when nothing is affected and 1 when anything is. See [Watch](/tools/watch) for the kinds of impact.
