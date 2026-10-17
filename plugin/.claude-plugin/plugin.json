@@ -10,6 +10,7 @@
   "license": "MIT",
   "skills": [
     "./skills/claim-check",
-    "./skills/label-diff"
+    "./skills/label-diff",
+    "./skills/fair-balance"
   ]
 }
