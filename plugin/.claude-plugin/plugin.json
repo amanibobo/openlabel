@@ -9,6 +9,7 @@
   "repository": "https://github.com/amanibobo/openlabel",
   "license": "MIT",
   "skills": [
-    "./skills/claim-check"
+    "./skills/claim-check",
+    "./skills/label-diff"
   ]
 }
