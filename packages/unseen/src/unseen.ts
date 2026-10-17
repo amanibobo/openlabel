@@ -6,21 +6,23 @@ import { trials } from "./trials.ts";
 import type { Candidate, Fetch, Search, UnseenResult } from "./types.ts";
 
 export async function unseen(search: Search, options: { fetch?: Fetch; concurrency?: number } = {}): Promise<UnseenResult> {
-  const fetchFn = options.fetch ?? ((url) => fetch(url));
+  const fetchFn = options.fetch ?? ((url, init) => fetch(url, init));
   const concurrency = options.concurrency ?? 8;
   const { prescribers: ranked, unmatchedDrugs } = await prescribers(fetchFn, search);
 
-  // Payments are the expensive join, so walk the ranking in batches and stop once enough pass.
+  // Payments are the expensive join: look them up for a batch of top prescribers at a time,
+  // in as few requests as Open Payments allows, until enough fall under the limit.
+  const batchSize = Math.max(search.limit * 10, 100);
   const kept: Candidate[] = [];
   let scanned = 0;
   while (kept.length < search.limit && scanned < ranked.length) {
-    const batch = ranked.slice(scanned, scanned + search.limit * 2);
+    const batch = ranked.slice(scanned, scanned + batchSize);
     scanned += batch.length;
-    // Four at a time keeps Open Payments under its burst limit.
-    const paid = await mapLimit(batch, Math.min(concurrency, 4), async (p) => ({ ...p, payments: await payments(fetchFn, p.npi) }));
-    for (const p of paid) {
-      if (search.maxPayments !== null && p.payments.total > search.maxPayments) continue;
-      if (kept.length < search.limit) kept.push({ ...p, location: null, trials: [] });
+    const paid = await payments(fetchFn, batch.map((p) => p.npi));
+    for (const p of batch) {
+      const total = paid.get(p.npi)!;
+      if (search.maxPayments !== null && total.total > search.maxPayments) continue;
+      if (kept.length < search.limit) kept.push({ ...p, payments: total, location: null, trials: [] });
     }
   }
 

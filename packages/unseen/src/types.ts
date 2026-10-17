@@ -5,7 +5,7 @@ export function asNpi(value: string): Npi {
   return value as Npi;
 }
 
-export type Fetch = (url: string) => Promise<Response>;
+export type Fetch = (url: string, init?: RequestInit) => Promise<Response>;
 
 export type Search = {
   state: string;
