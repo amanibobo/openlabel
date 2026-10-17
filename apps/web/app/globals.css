@@ -133,7 +133,7 @@ h1 .rest {
 .btn.primary:hover {
   background: #fff;
 }
-.btn .gh {
+.btn .icon {
   width: 15px;
   height: 15px;
   flex: none;
