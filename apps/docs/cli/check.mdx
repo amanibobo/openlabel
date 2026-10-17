@@ -16,7 +16,8 @@ openlabel check <file> --label <drug or set id> [options]
 | `--rules <file>` | A YAML [rule pack](/concepts/rule-packs). Defaults to `fda-core` |
 | `--save` | Also write the report to `<file>.check.json` for [`watch`](/cli/watch) |
 | `--json` | Print the report as JSON |
-| `--model <id>` | Claude model. Defaults to `claude-opus-5-5` |
+| `--provider <name>` | Which model provider to use. See [Models and providers](/cli/overview#models-and-providers) |
+| `--model <id>` | Model id. Defaults to `claude-opus-5-5` on Anthropic; required elsewhere |
 
 ```sh
 openlabel check examples/dupixent-sms.txt --label dupixent --rules examples/pulse-sms.yaml

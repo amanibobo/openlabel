@@ -1,6 +1,5 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type { Sentence } from "@openlabel/label";
+import type { Llm } from "@openlabel/llm";
 import { z } from "zod";
 import { CLAIM_KINDS, VERDICTS, type ClaimKind, type Verdict } from "./types.ts";
 
@@ -40,32 +39,9 @@ Verdicts:
 Cite the ids of the sentences your verdict rests on; leave the list empty only for unsupported.
 Give the reason as one plain sentence a reviewer can check against the cited text.`;
 
-export const DEFAULT_MODEL = "claude-opus-5-5";
-
-export function claudeModel(options: { client?: Anthropic; model?: string } = {}): ClaimModel {
-  const client = options.client ?? new Anthropic();
-  const model = options.model ?? DEFAULT_MODEL;
-
-  async function ask<T>(
-    system: string,
-    content: string,
-    schema: z.ZodType<T>,
-    effort: "medium" | "high",
-  ): Promise<T> {
-    const response = await client.beta.messages.parse({
-      model,
-      max_tokens: 16000,
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
-      system,
-      messages: [{ role: "user", content }],
-      output_config: { effort, format: betaZodOutputFormat(schema) },
-    });
-    if (response.stop_reason === "refusal") throw new Error(`the model declined: ${response.stop_details?.category ?? "no category"}`);
-    if (response.stop_reason === "max_tokens") throw new Error("the model ran out of output tokens");
-    if (!response.parsed_output) throw new Error("the model returned output that did not match the schema");
-    return response.parsed_output;
-  }
+export function claimModel(llm: Llm): ClaimModel {
+  const ask = <T>(system: string, content: string, schema: z.ZodType<T>, effort: "medium" | "high") =>
+    llm.json({ system, content, schema, effort });
 
   return {
     async extract(piece, labelTitle) {

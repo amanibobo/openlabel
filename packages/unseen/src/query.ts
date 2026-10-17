@@ -1,5 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
+import type { Llm } from "@openlabel/llm";
 import { z } from "zod";
 import { stateName } from "./trials.ts";
 import type { Search } from "./types.ts";
@@ -17,21 +16,9 @@ Part D records drugs, not diagnoses, so translate a condition into the drugs tha
 
 export type ParseQuery = (question: string) => Promise<Omit<Search, "limit">>;
 
-export function claudeQueryParser(options: { client?: Anthropic; model?: string } = {}): ParseQuery {
-  const client = options.client ?? new Anthropic();
+export function queryParser(llm: Llm): ParseQuery {
   return async (question) => {
-    const response = await client.beta.messages.parse({
-      model: options.model ?? "claude-opus-5-5",
-      max_tokens: 4000,
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
-      system: SYSTEM,
-      messages: [{ role: "user", content: question }],
-      output_config: { effort: "low", format: betaZodOutputFormat(Parsed) },
-    });
-    if (response.stop_reason === "refusal") throw new Error("the model declined to parse the question");
-    const parsed = response.parsed_output;
-    if (!parsed) throw new Error("the model returned a search that did not match the schema");
+    const parsed = await llm.json({ system: SYSTEM, content: question, schema: Parsed, effort: "low" });
     stateName(parsed.state);
     return { ...parsed, state: parsed.state.toUpperCase() };
   };

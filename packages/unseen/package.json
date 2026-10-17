@@ -10,7 +10,7 @@
     "typecheck": "tsc -p ."
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.135.0",
+    "@openlabel/llm": "*",
     "@openlabel/util": "*",
     "zod": "^4.6.7"
   }

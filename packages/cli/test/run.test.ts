@@ -100,6 +100,40 @@ describe("run", () => {
   });
 });
 
+describe("choosing a provider", () => {
+  it("exits 64 with a plain message when a provider has no model", async () => {
+    const t = io();
+    expect(await run(["check", pieceFile("Live clear."), "--label", "dupixent", "--provider", "openai"], t.io)).toBe(64);
+    expect(t.err.join("")).toBe("openlabel: set a model for openai with --model or OPENLABEL_MODEL");
+  });
+
+  it("rejects a provider it does not know", async () => {
+    const t = io();
+    expect(await run(["unseen", "Georgia dermatologists", "--provider", "mistral"], t.io)).toBe(64);
+    expect(t.err.join("")).toMatch(/unknown provider "mistral"/);
+  });
+
+  it("keeps skills eval on Claude", async () => {
+    const t = io();
+    expect(await run(["skills", "eval", "--provider", "openai"], t.io)).toBe(64);
+    expect(t.err.join("")).toMatch(/skills eval runs Claude/);
+  });
+
+  it("checks with whatever model the provider gives", async () => {
+    const llm = {
+      name: "test",
+      json: async ({ system }: { system: string }) =>
+        (system.includes("List every claim")
+          ? { claims: [{ text: "Live clear.", kind: "efficacy", query: "IGA 0 or 1" }] }
+          : { verdict: "overstated", evidence: ["14.1:12.1"], reason: "Only 38%." }) as never,
+    };
+    const t = io();
+    const code = await run(["check", pieceFile("Live clear."), "--label", "dupixent"], t.io, { dailyMed: fakeDailyMed, llm: () => llm });
+    expect(code).toBe(2);
+    expect(t.out.join("")).toContain("Only 38%.");
+  });
+});
+
 describe("run watch", () => {
   it("exits 0 for a library checked against the current label", async () => {
     const file = pieceFile("Live clear.");
