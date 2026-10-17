@@ -1,6 +1,8 @@
 # Open Label
 
-A concept site for open tools that keep every message to a doctor true to the FDA label.
+[![openlabel check reviewing a print ad, built with OpenTUI](docs/media/demo.gif)](https://openlabel-two.vercel.app)
+
+Open tools that keep every message to a doctor true to the FDA label.
 
 - **Check** matches each claim in a piece, including what its imagery implies, to the label sentence that supports it.
 - **Watch** turns a label revision into the list of approved claims it broke.
@@ -96,6 +98,7 @@ cd tui
 bun install
 bun run demo     # play it in your terminal
 bun run record   # regenerate apps/web/public/demo/check.{mp4,webm} and the poster
+bun run gif      # regenerate docs/media/demo.gif for this README from the mp4
 ```
 
 ## Layout
