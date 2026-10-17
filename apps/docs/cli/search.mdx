@@ -1,0 +1,26 @@
+---
+title: "openlabel search"
+description: "Print the label sentences that best match a question."
+---
+
+```sh
+openlabel search <drug> "<question>" [--limit n]
+```
+
+```sh
+openlabel search dupixent "conjunctivitis and keratitis" --limit 3
+```
+
+```text
+Dupixent (dupilumab) · label v60
+
+  §5.2 ¶2  Conjunctivitis and keratitis occurred more frequently in AD subjects who received DUPIXENT compared to those who received placebo.
+  …
+```
+
+| Option | Description |
+| --- | --- |
+| `--limit <n>` | How many sentences to print. Defaults to 8 |
+| `--json` | Print `label` and `sentences` as JSON |
+
+Search is keyword retrieval (BM25), not a model, so it needs no API key. It works best with the label's own vocabulary: "atopic dermatitis" rather than "eczema", "IGA 0 or 1" rather than "clear skin". Table rows match on their table's caption as well as their cells.
