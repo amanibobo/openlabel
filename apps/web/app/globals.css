@@ -519,6 +519,23 @@ h1 .rest {
   max-height: 340px;
   display: block;
 }
+.diff-block,
+.blast .edges,
+.blast .node {
+  transition: opacity 0.2s ease;
+}
+.diff-block:focus-visible,
+.blast .node:focus-visible {
+  outline: none;
+}
+.diff-block.dim,
+.blast .edges.dim,
+.blast .node.dim {
+  opacity: 0.25;
+}
+.blast .node {
+  cursor: default;
+}
 .blast .ring {
   fill: none;
   stroke: var(--surface-3);

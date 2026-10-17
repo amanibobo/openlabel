@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
-import { BlastRadius } from "./components/BlastRadius";
 import { CheckDemo } from "./components/CheckDemo";
 import { CopyCommand } from "./components/CopyCommand";
 import { DemoWindow } from "./components/DemoWindow";
 import { UnseenExplorer } from "./components/UnseenExplorer";
-import { docs, github, labelDiff, skills, unseenQueries, youtube } from "./content";
+import { WatchDemo } from "./components/WatchDemo";
+import { docs, github, skills, unseenQueries, youtube } from "./content";
 import { stateMap } from "./geo";
 
 function Mark() {
@@ -103,31 +103,7 @@ export default function Home() {
         <SectionHead name="Watch" command="openlabel watch" title="A label change has a blast radius.">
           Watch finds the approved claims it broke and drafts the fixes.
         </SectionHead>
-        <div className="watch">
-          <div className="diff">
-            <div className="diff-head">
-              <span>Lorvexa label</span>
-              <code>rev 03/2026 to 06/2026</code>
-            </div>
-            {labelDiff.map((block) => (
-              <div className="diff-block" key={block.section}>
-                <p className="diff-section">{block.section}</p>
-                {block.lines.map((line, i) => (
-                  <p key={i} className={`diff-line ${line.kind}`}>
-                    <span className="sign">{line.kind === "add" ? "+" : line.kind === "del" ? "−" : " "}</span>
-                    {line.text}
-                  </p>
-                ))}
-              </div>
-            ))}
-            <p className="diff-foot">
-              4 fixes drafted and rechecked, <span className="t-ok">4 pass</span>
-            </p>
-          </div>
-          <div className="blast-wrap">
-            <BlastRadius />
-          </div>
-        </div>
+        <WatchDemo />
       </section>
 
       <section className="sec rail" id="unseen">

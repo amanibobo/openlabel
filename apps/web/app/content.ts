@@ -17,9 +17,15 @@ export const verdictTone: Record<Verdict, "ok" | "warn" | "bad"> = {
 
 export type DiffLine = { kind: "same" | "del" | "add"; text: string };
 
-export const labelDiff: readonly { section: string; lines: readonly DiffLine[] }[] = [
+// One changed section of the label. `angle` places it on the blast-radius ring.
+export type LabelChange = { section: string; title: string; short: string; angle: number; lines: readonly DiffLine[] };
+
+export const labelChanges: readonly LabelChange[] = [
   {
-    section: "2.2 Recommended dosage",
+    section: "2.2",
+    title: "Recommended dosage",
+    short: "dosing",
+    angle: 200,
     lines: [
       { kind: "del", text: "Initial dose of 600 mg (two 300 mg injections)," },
       { kind: "add", text: "Initial dose of 400 mg (two 200 mg injections)," },
@@ -27,7 +33,10 @@ export const labelDiff: readonly { section: string; lines: readonly DiffLine[] }
     ],
   },
   {
-    section: "5.3 Conjunctivitis and keratitis",
+    section: "5.3",
+    title: "Conjunctivitis and keratitis",
+    short: "new warning",
+    angle: -20,
     lines: [
       { kind: "add", text: "Conjunctivitis and keratitis occurred more frequently" },
       { kind: "add", text: "in patients who received LORVEXA." },
@@ -35,13 +44,14 @@ export const labelDiff: readonly { section: string; lines: readonly DiffLine[] }
   },
 ];
 
-export type Piece = { file: string; claims: number; reason: string; severity: "bad" | "warn" };
+// An approved piece the change broke, and which changed section broke it.
+export type Piece = { file: string; section: string; angle: number; claims: number; reason: string; severity: "bad" | "warn" };
 
 export const blastPieces: readonly Piece[] = [
-  { file: "hcp-email-0311.html", claims: 3, reason: "600 mg loading dose", severity: "bad" },
-  { file: "sms-0412.md", claims: 1, reason: "safety link to rev 03/2026", severity: "bad" },
-  { file: "leave-behind-0207.pdf", claims: 2, reason: "ISI omits keratitis", severity: "bad" },
-  { file: "dosing-calculator.json", claims: 1, reason: "default dose 600 mg", severity: "warn" },
+  { file: "hcp-email-0311.html", section: "2.2", angle: 232, claims: 3, reason: "600 mg loading dose", severity: "bad" },
+  { file: "sms-0412.md", section: "5.3", angle: -52, claims: 1, reason: "safety link to rev 03/2026", severity: "bad" },
+  { file: "leave-behind-0207.pdf", section: "5.3", angle: 28, claims: 2, reason: "ISI omits keratitis", severity: "bad" },
+  { file: "dosing-calculator.json", section: "2.2", angle: 152, claims: 1, reason: "default dose 600 mg", severity: "warn" },
 ];
 
 /* Unseen */
