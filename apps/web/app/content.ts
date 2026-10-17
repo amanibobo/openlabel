@@ -1,28 +1,3 @@
-export type Tone = "p" | "cmd" | "arg" | "out" | "dim" | "hi" | "ok" | "warn" | "bad";
-export type Span = readonly [Tone, string];
-export type Line = readonly Span[];
-
-export type Session = {
-  title: string;
-  command: string;
-  args: string;
-  output: readonly Line[];
-};
-
-export function promptLine(command: string, args: string): Line {
-  return [
-    ["p", "❯ "],
-    ["cmd", command],
-    ["arg", args ? ` ${args}` : ""],
-  ];
-}
-
-const blank: Line = [];
-
-function col(text: string, width: number): string {
-  return text.padEnd(width);
-}
-
 export const github = "https://github.com/amanibobo/openlabel";
 export const docs = "https://au-2a4a5dc8.mintlify.app";
 export const youtube = "https://www.youtube.com/";
@@ -37,8 +12,6 @@ export const verdictTone: Record<Verdict, "ok" | "warn" | "bad"> = {
   imagery: "bad",
   missing: "bad",
 };
-
-const verdictGlyph: Record<Verdict, string> = { supported: "✓", overstated: "~", imagery: "✗", missing: "✗" };
 
 export type Box = { left: number; top: number; width: number; height: number };
 
@@ -112,26 +85,6 @@ export const labelSentences: Record<string, string> = {
     "At Week 16, 38% of patients treated with LORVEXA achieved IGA 0 (clear) or 1 (almost clear), compared to 9% with placebo.",
   "s-scope": "Efficacy was assessed on skin clearance endpoints through Week 16.",
   "s-dlqi": "Mean change from baseline in DLQI total score at Week 16 was −6.1 with LORVEXA and −2.3 with placebo.",
-};
-
-export const checkSession: Session = {
-  title: "openlabel check",
-  command: "openlabel check",
-  args: "pulse/lorvexa-print-0412 --label lorvexa",
-  output: [
-    [["dim", "  label    "], ["out", "Lorvexa (velorimab) prescribing information, rev 06/2026"]],
-    [["dim", "  claims   "], ["out", `${claims.length} extracted, each matched against 214 label sentences`]],
-    blank,
-    ...claims.map(
-      (c): Line => [
-        [verdictTone[c.verdict], col(`  ${verdictGlyph[c.verdict]} ${c.verdict}`, 17)],
-        ["out", col(c.quoted ? `"${c.text}"` : c.text, 40)],
-        ["dim", c.cite],
-      ],
-    ),
-    blank,
-    [["hi", "  1 supported, 2 overstated, 2 violations"], ["dim", " · exit 2"]],
-  ],
 };
 
 /* Watch */
