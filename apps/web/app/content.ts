@@ -109,13 +109,13 @@ export const labelDiff: readonly { section: string; lines: readonly DiffLine[] }
   },
 ];
 
-export type Piece = { file: string; kind: string; claims: number; reason: string; severity: "bad" | "warn" };
+export type Piece = { file: string; claims: number; reason: string; severity: "bad" | "warn" };
 
 export const blastPieces: readonly Piece[] = [
-  { file: "hcp-email-0311.html", kind: "Email", claims: 3, reason: "600 mg loading dose", severity: "bad" },
-  { file: "sms-0412.md", kind: "SMS", claims: 1, reason: "safety link to rev 03/2026", severity: "bad" },
-  { file: "leave-behind-0207.pdf", kind: "Leave-behind", claims: 2, reason: "ISI omits keratitis", severity: "bad" },
-  { file: "dosing-calculator.json", kind: "Calculator", claims: 1, reason: "default dose 600 mg", severity: "warn" },
+  { file: "hcp-email-0311.html", claims: 3, reason: "600 mg loading dose", severity: "bad" },
+  { file: "sms-0412.md", claims: 1, reason: "safety link to rev 03/2026", severity: "bad" },
+  { file: "leave-behind-0207.pdf", claims: 2, reason: "ISI omits keratitis", severity: "bad" },
+  { file: "dosing-calculator.json", claims: 1, reason: "default dose 600 mg", severity: "warn" },
 ];
 
 /* Unseen */
